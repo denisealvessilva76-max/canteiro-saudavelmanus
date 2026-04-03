@@ -3,30 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canteiro Saudável - Painel Admin (Firestore)</title>
+    <title>Canteiro Saudável - Painel Admin</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0fdf4;
-            color: #0f172a;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
-        .header {
-            background: linear-gradient(135deg, #14532d 0%, #15803d 100%);
+        header {
+            background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
             color: white;
             padding: 30px;
-            border-radius: 12px;
+            border-radius: 15px;
             margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(21,128,61,0.3);
+            box-shadow: 0 10px 30px rgba(22,163,74,0.2);
         }
-        .header h1 { font-size: 28px; margin-bottom: 10px; }
-        .header p { opacity: 0.9; }
-        .stats-grid {
+        h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
@@ -36,28 +42,55 @@
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             border-left: 4px solid #16a34a;
         }
-        .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
-        .stat-value { font-size: 32px; font-weight: bold; color: #16a34a; }
-        .employees-section {
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #15803d;
+        }
+        .section {
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
-        .employees-section h2 { margin-bottom: 20px; color: #0f172a; }
-        .employee-item {
-            padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .section h2 {
+            font-size: 20px;
+            color: #15803d;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0f2fe;
+            padding-bottom: 10px;
         }
-        .employee-item:last-child { border-bottom: none; }
-        .employee-name { font-weight: 600; color: #0f172a; }
-        .employee-status { font-size: 12px; color: #64748b; margin-top: 4px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #f0fdf4;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #15803d;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0f2fe;
+        }
+        tr:hover {
+            background: #f8fffe;
+        }
         .status-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -65,197 +98,215 @@
             font-size: 12px;
             font-weight: 600;
         }
-        .status-active { background: #dcfce7; color: #15803d; }
-        .status-inactive { background: #fee2e2; color: #dc2626; }
-        .loading { text-align: center; padding: 40px; color: #64748b; }
-        .error { background: #fee2e2; color: #dc2626; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+        .status-ativo {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .status-inativo {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e0f2fe;
+            border-top-color: #16a34a;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+        }
+        .success {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #16a34a;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <header>
             <h1>🌱 Canteiro Saudável</h1>
-            <p>Painel Administrativo - Firestore Real-time</p>
-        </div>
+            <p class="subtitle">Painel Administrativo - Realtime Database</p>
+        </header>
 
-        <div id="error" class="error" style="display: none;"></div>
+        <div id="status-message"></div>
 
-        <div class="stats-grid">
+        <div class="stats">
             <div class="stat-card">
                 <div class="stat-label">Total de Funcionários</div>
-                <div class="stat-value" id="totalEmployees">0</div>
+                <div class="stat-value" id="total-funcionarios">0</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Ativos Hoje</div>
-                <div class="stat-value" id="activeToday">0</div>
+                <div class="stat-value" id="ativos-hoje">0</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Hidratação Média</div>
-                <div class="stat-value" id="hydrationAvg">0ml</div>
+                <div class="stat-value" id="hidratacao-media">0ml</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Queixas Semana</div>
-                <div class="stat-value" id="complaintsWeek">0</div>
+                <div class="stat-value" id="queixas-semana">0</div>
             </div>
         </div>
 
-        <div class="employees-section">
-            <h2>Funcionários Cadastrados</h2>
-            <div id="employeesList" class="loading">Carregando dados do Firestore...</div>
+        <div class="section">
+            <h2>📋 Funcionários Cadastrados</h2>
+            <div id="funcionarios-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando dados...</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <script>
-        // ========== CONFIGURAÇÃO DO FIREBASE ==========
+        'use strict';
+
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyB32S5Eac0guxy1herefub70AIAGkgF1Rw",
             authDomain: "canteiro-saudavel.firebaseapp.com",
+            databaseURL: "https://canteiro-saudavel-default-rtdb.firebaseio.com",
             projectId: "canteiro-saudavel",
             storageBucket: "canteiro-saudavel.firebasestorage.app",
             messagingSenderId: "37768857073",
-            appId: "1:37768857073:web:3e62666713391869813050",
-            measurementId: "G-1BZG7Q9NL4"
+            appId: "1:37768857073:web:3e62666713391869813050"
         };
 
-        let db = null;
-        let storage = null;
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-            storage = firebase.storage();
-            console.log('✅ Firebase Firestore inicializado com sucesso');
-        } catch(e) {
-            console.error('❌ Erro ao inicializar Firebase:', e);
-            document.getElementById('error').style.display = 'block';
-            document.getElementById('error').textContent = 'Erro ao conectar com Firebase: ' + e.message;
-        }
+        console.log('✅ Firebase inicializado com sucesso');
 
-        // ========== FUNÇÕES DE DADOS ==========
-        async function loadDashboardData() {
-            if (!db) {
-                console.error('Firebase não inicializado');
-                return;
-            }
-
+        // Função para atualizar dashboard
+        async function atualizarDashboard() {
             try {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
+                console.log('🔄 Atualizando dashboard...');
 
-                // Carregar usuários
-                const usuariosSnap = await db.collection('usuarios').get();
-                const totalEmployees = usuariosSnap.size;
+                // Buscar dados de funcionários
+                const funcionariosRef = db.ref('canteiro-saudavel/employees');
+                const snapshot = await funcionariosRef.once('value');
+                const funcionarios = snapshot.val() || {};
 
-                let activeToday = 0;
-                let totalHydration = 0;
-                let hydrationCount = 0;
-                let complaintsWeek = 0;
-                const employees = [];
+                console.log('📊 Funcionários:', funcionarios);
 
-                // Processar cada funcionário
-                for (const doc of usuariosSnap.docs) {
-                    const empData = doc.data();
-                    const matricula = doc.id;
+                // Calcular estatísticas
+                const totalFuncionarios = Object.keys(funcionarios).length;
+                let ativosHoje = 0;
+                let hidratacaoTotal = 0;
+                let queixasTotal = 0;
 
-                    // Check-ins de hoje
-                    const checkinsSnap = await db.collection('checkins')
-                        .where('matricula', '==', matricula)
-                        .where('criadoEm', '>=', new Date(today))
-                        .get();
+                const funcionariosArray = [];
 
-                    const hasCheckInToday = checkinsSnap.size > 0;
-                    if (hasCheckInToday) activeToday++;
-
-                    // Hidratação de hoje
-                    const waterSnap = await db.collection('hidratacao')
-                        .where('matricula', '==', matricula)
-                        .where('criadoEm', '>=', new Date(today))
-                        .get();
-
-                    let hydrationToday = 0;
-                    waterSnap.forEach(w => {
-                        hydrationToday += w.data().agua || 0;
+                for (const uid in funcionarios) {
+                    const func = funcionarios[uid];
+                    funcionariosArray.push({
+                        uid,
+                        nome: func.nome || 'N/A',
+                        matricula: func.matricula || 'N/A',
+                        funcao: func.funcao || 'N/A',
+                        ativo: func.ativo !== false,
+                        hidratacao: func.hidratacao || 0,
+                        ultimoCheckin: func.ultimoCheckin || 'N/A'
                     });
 
-                    if (hydrationToday > 0) {
-                        totalHydration += hydrationToday;
-                        hydrationCount++;
-                    }
-
-                    // Queixas da semana
-                    const symptomsSnap = await db.collection('saude')
-                        .where('matricula', '==', matricula)
-                        .where('tipo', '==', 'sintoma')
-                        .where('criadoEm', '>=', new Date(weekAgo))
-                        .get();
-
-                    complaintsWeek += symptomsSnap.size;
-
-                    employees.push({
-                        id: matricula,
-                        name: empData.nome || 'Sem nome',
-                        matricula: matricula,
-                        position: empData.funcao || '-',
-                        turno: empData.turno || '-',
-                        lastCheckIn: hasCheckInToday ? 'Hoje' : 'Não',
-                        hydrationToday: hydrationToday,
-                        hydrationGoal: 2000
-                    });
+                    if (func.ativo !== false) ativosHoje++;
+                    hidratacaoTotal += func.hidratacao || 0;
+                    queixasTotal += func.queixas ? Object.keys(func.queixas).length : 0;
                 }
 
-                // Atualizar UI
-                document.getElementById('totalEmployees').textContent = totalEmployees;
-                document.getElementById('activeToday').textContent = activeToday;
-                document.getElementById('hydrationAvg').textContent = 
-                    hydrationCount > 0 ? Math.round(totalHydration / hydrationCount) + 'ml' : '0ml';
-                document.getElementById('complaintsWeek').textContent = complaintsWeek;
+                // Atualizar cards
+                document.getElementById('total-funcionarios').textContent = totalFuncionarios;
+                document.getElementById('ativos-hoje').textContent = ativosHoje;
+                document.getElementById('hidratacao-media').textContent = 
+                    totalFuncionarios > 0 ? Math.round(hidratacaoTotal / totalFuncionarios) + 'ml' : '0ml';
+                document.getElementById('queixas-semana').textContent = queixasTotal;
 
-                // Renderizar lista de funcionários
-                const employeesList = document.getElementById('employeesList');
-                if (employees.length === 0) {
-                    employeesList.innerHTML = '<p style="text-align: center; color: #64748b; padding: 20px;">Nenhum funcionário cadastrado ainda</p>';
+                // Atualizar tabela
+                if (funcionariosArray.length === 0) {
+                    document.getElementById('funcionarios-list').innerHTML = 
+                        '<p style="text-align:center; color:#64748b; padding:20px;">Nenhum funcionário cadastrado ainda</p>';
                 } else {
-                    employeesList.innerHTML = employees.map(emp => `
-                        <div class="employee-item">
-                            <div>
-                                <div class="employee-name">${emp.name}</div>
-                                <div class="employee-status">
-                                    Matrícula: ${emp.matricula} | Função: ${emp.position} | Turno: ${emp.turno}
-                                </div>
-                                <div class="employee-status" style="margin-top: 8px;">
-                                    ✓ Check-in: ${emp.lastCheckIn} | 💧 Hidratação: ${emp.hydrationToday}/${emp.hydrationGoal}ml
-                                </div>
-                            </div>
-                            <div>
-                                <span class="status-badge ${emp.lastCheckIn === 'Hoje' ? 'status-active' : 'status-inactive'}">
-                                    ${emp.lastCheckIn === 'Hoje' ? '🟢 Ativo' : '🔴 Inativo'}
-                                </span>
-                            </div>
-                        </div>
-                    `).join('');
+                    let html = '<table><thead><tr>' +
+                        '<th>Nome</th>' +
+                        '<th>Matrícula</th>' +
+                        '<th>Função</th>' +
+                        '<th>Status</th>' +
+                        '<th>Hidratação</th>' +
+                        '<th>Último Check-in</th>' +
+                        '</tr></thead><tbody>';
+
+                    funcionariosArray.forEach(f => {
+                        const statusClass = f.ativo ? 'status-ativo' : 'status-inativo';
+                        const statusText = f.ativo ? '✓ Ativo' : '✗ Inativo';
+                        html += `<tr>
+                            <td>${f.nome}</td>
+                            <td>${f.matricula}</td>
+                            <td>${f.funcao}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td>${f.hidratacao}ml</td>
+                            <td>${f.ultimoCheckin}</td>
+                        </tr>`;
+                    });
+
+                    html += '</tbody></table>';
+                    document.getElementById('funcionarios-list').innerHTML = html;
                 }
 
                 console.log('✅ Dashboard atualizado com sucesso');
+                mostrarMensagem('✅ Dados sincronizados com sucesso!', 'success');
+
             } catch (error) {
-                console.error('❌ Erro ao carregar dados:', error);
-                document.getElementById('error').style.display = 'block';
-                document.getElementById('error').textContent = 'Erro ao carregar dados: ' + error.message;
+                console.error('❌ Erro ao atualizar dashboard:', error);
+                mostrarMensagem('❌ Erro ao carregar dados: ' + error.message, 'error');
             }
         }
 
-        // ========== INICIALIZAÇÃO ==========
+        function mostrarMensagem(texto, tipo) {
+            const el = document.getElementById('status-message');
+            el.innerHTML = `<div class="${tipo}">${texto}</div>`;
+            setTimeout(() => {
+                el.innerHTML = '';
+            }, 5000);
+        }
+
+        // Atualizar ao carregar
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Iniciando painel admin...');
-            loadDashboardData();
+            atualizarDashboard();
             // Atualizar a cada 10 segundos
-            setInterval(loadDashboardData, 10000);
+            setInterval(atualizarDashboard, 10000);
+        });
+
+        // Listener em tempo real
+        db.ref('canteiro-saudavel/employees').on('value', () => {
+            console.log('🔔 Dados alterados, atualizando...');
+            atualizarDashboard();
         });
     </script>
 </body>

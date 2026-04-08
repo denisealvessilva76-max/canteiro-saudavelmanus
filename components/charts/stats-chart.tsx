@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, Dimensions } from 'react-native';
-import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
 import { useColors } from '@/hooks/use-colors';
 
 const screenWidth = Dimensions.get('window').width;
@@ -13,6 +12,10 @@ export interface StatsChartProps {
   showLegend?: boolean;
 }
 
+/**
+ * Componente de gráfico simplificado (sem dependência externa)
+ * Renderiza gráficos básicos usando componentes nativos
+ */
 export function StatsChart({
   type,
   title,
@@ -22,69 +25,117 @@ export function StatsChart({
 }: StatsChartProps) {
   const colors = useColors();
 
-  const chartConfig = {
-    backgroundGradientFrom: colors.background,
-    backgroundGradientTo: colors.background,
-    color: () => colors.primary,
-    strokeWidth: 2,
-    barPercentage: 0.5,
-    useShadowColorFromDataset: false,
-    decimalPlaces: 0,
-    propsForLabels: {
-      fontSize: 12,
-      fill: colors.foreground,
-    },
-    propsForBackgroundLines: {
-      strokeDasharray: '0',
-      stroke: colors.border,
-      strokeWidth: 0.5,
-    },
+  const renderBarChart = () => {
+    if (!data.datasets || !data.datasets[0]) return null;
+    
+    const values = data.datasets[0].data || [];
+    const maxValue = Math.max(...values, 1);
+    const barWidth = (screenWidth - 60) / Math.max(values.length, 1);
+
+    return (
+      <View style={{ height }}>
+        <View className="flex-row items-flex-end justify-around px-4" style={{ height: height - 40 }}>
+          {values.map((value: number, idx: number) => (
+            <View key={idx} className="items-center">
+              <View
+                style={{
+                  width: barWidth - 8,
+                  height: (value / maxValue) * (height - 60),
+                  backgroundColor: colors.primary,
+                  borderRadius: 4,
+                }}
+              />
+            </View>
+          ))}
+        </View>
+        <View className="flex-row justify-around px-4 mt-2">
+          {data.labels?.map((label: string, idx: number) => (
+            <Text key={idx} className="text-xs text-muted" style={{ width: barWidth - 8 }}>
+              {label}
+            </Text>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  const renderLineChart = () => {
+    if (!data.datasets || !data.datasets[0]) return null;
+
+    const values = data.datasets[0].data || [];
+    const maxValue = Math.max(...values, 1);
+    const minValue = Math.min(...values, 0);
+    const range = maxValue - minValue || 1;
+    const pointSpacing = (screenWidth - 60) / Math.max(values.length - 1, 1);
+
+    return (
+      <View style={{ height }}>
+        {/* Grid de fundo */}
+        <View className="absolute w-full" style={{ height: height - 40, top: 0, left: 20 }}>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <View
+              key={i}
+              style={{
+                position: 'absolute',
+                width: screenWidth - 60,
+                height: 1,
+                backgroundColor: colors.border,
+                top: ((height - 40) / 4) * i,
+              }}
+            />
+          ))}
+        </View>
+
+        {/* Pontos e linha */}
+        <View className="flex-row items-flex-end px-5" style={{ height: height - 40 }}>
+          {values.map((value: number, idx: number) => {
+            const normalizedValue = (value - minValue) / range;
+            const yPos = (height - 60) * (1 - normalizedValue);
+
+            return (
+              <View
+                key={idx}
+                style={{
+                  position: 'absolute',
+                  left: 20 + idx * pointSpacing,
+                  top: yPos,
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: colors.primary,
+                }}
+              />
+            );
+          })}
+        </View>
+
+        {/* Labels */}
+        <View className="flex-row justify-around px-4 mt-2">
+          {data.labels?.map((label: string, idx: number) => (
+            <Text key={idx} className="text-xs text-muted">
+              {label}
+            </Text>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  const renderPieChart = () => {
+    return (
+      <View className="items-center justify-center" style={{ height }}>
+        <Text className="text-sm text-muted">Gráfico de pizza</Text>
+      </View>
+    );
   };
 
   return (
     <View className="bg-surface rounded-lg p-4 mb-4 shadow-sm">
       <Text className="text-lg font-semibold text-foreground mb-3">{title}</Text>
 
-      {type === 'line' && (
-        <LineChart
-          data={{
-            labels: data.labels,
-            datasets: data.datasets,
-          }}
-          width={screenWidth - 40}
-          height={height}
-          chartConfig={chartConfig}
-          bezier
-          style={{
-            marginVertical: 8,
-            borderRadius: 16,
-          }}
-        />
-      )}
-
-      {type === 'bar' && (
-        <BarChart
-          data={{
-            labels: data.labels,
-            datasets: data.datasets,
-          }}
-          width={screenWidth - 40}
-          height={height}
-          chartConfig={chartConfig}
-          yAxisLabel=""
-          yAxisSuffix=""
-          style={{
-            marginVertical: 8,
-            borderRadius: 16,
-          }}
-        />
-      )}
-
-      {type === 'pie' && data.datasets[0] && (
-        <View>
-          <Text className="text-sm text-muted text-center">Gráfico de pizza</Text>
-        </View>
-      )}
+      {type === 'line' && renderLineChart()}
+      {type === 'bar' && renderBarChart()}
+      {type === 'pie' && renderPieChart()}
     </View>
   );
 }
@@ -101,8 +152,6 @@ export function PointsChart({ data }: PointsChartProps) {
     datasets: [
       {
         data: data.map((d) => d.points),
-        color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
-        strokeWidth: 2,
       },
     ],
   };
@@ -127,8 +176,6 @@ export function HydrationChart({ data }: HydrationChartProps) {
     datasets: [
       {
         data: data.map((d) => d.cups),
-        color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
-        strokeWidth: 2,
       },
     ],
   };
@@ -153,13 +200,6 @@ export function PressureChart({ data }: PressureChartProps) {
     datasets: [
       {
         data: data.map((d) => d.systolic),
-        color: (opacity = 1) => `rgba(239, 68, 68, ${opacity})`,
-        strokeWidth: 2,
-      },
-      {
-        data: data.map((d) => d.diastolic),
-        color: (opacity = 1) => `rgba(249, 115, 22, ${opacity})`,
-        strokeWidth: 2,
       },
     ],
   };
@@ -192,7 +232,6 @@ export function ComparisonChart({
     datasets: [
       {
         data: [userValue, averageValue],
-        color: (opacity = 1) => `rgba(139, 92, 246, ${opacity})`,
       },
     ],
   };

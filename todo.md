@@ -268,6 +268,24 @@
 
 ---
 
+## BUGS CRÍTICOS NOVOS (DOCUMENTO PDF)
+- [ ] **CRÍTICO: Tela preta ao clicar em opções** - erro de imports ou renderização
+- [ ] **CRÍTICO: Sem tela de login visível** - app vai direto para check-in sem login
+- [ ] **CRÍTICO: Painel admin com carregamento infinito** - dados não carregam
+- [ ] **CRÍTICO: Painel admin sem autenticação** - qualquer um acessa
+
+## FUNCIONALIDADES FALTANTES DO DOCUMENTO
+- [ ] Tela de Login com Matrícula, Nome e Seleção de Turno (Diurno/Noturno)
+- [ ] Indicador de dias com bolinhas de progresso (0 dias 🔥)
+- [ ] Check-in com status visual "✓ Feito" após completar
+- [ ] Painel Admin com autenticação (login/senha)
+- [ ] Painel Admin com aba de Prêmios do Mês (edição, gestão)
+- [ ] Painel Admin com aba de Notícias/Comunicados (criar, editar, deletar)
+- [ ] Painel Admin carregando dados em tempo real (sem carregamento infinito)
+- [ ] Melhorias de estética: cores diferenciadas, ícones visuais, feedback visual
+- [ ] Cards com cores específicas (azul, verde, amarelo, rosa)
+- [ ] Transições suaves e loading states claros
+
 ## Funcionalidades Faltantes Críticas
 - [ ] Botão "Área Administrativa" visível na tela Perfil
 - [ ] Formulário detalhado ao clicar em "Dor leve" ou "Dor forte"
@@ -3268,3 +3286,30 @@ Adicionar guia sonoro (Text-to-Speech) para instruir funcionários durante exerc
 - [ ] Exibição de benefícios desbloqueados
 
 ---
+
+
+---
+
+## BUGS CRÍTICOS REPORTADOS - SESSÃO ATUAL
+
+### Painel Admin
+- [ ] Carregamento infinito - dados não carregam do Realtime Database
+- [ ] Sem autenticação - qualquer um acessa sem login
+- [ ] Falta aba de edição de prêmios do mês
+- [ ] Falta aba de notícias/comunicados para aparecer no app
+
+### App Canteiro Saudável
+- [ ] Sem tela de login - vai direto para check-in
+- [ ] Tela preta ao clicar em opções (erro crítico)
+- [ ] Necessário debugar erro completo
+
+### Melhorias Propostas Não Implementadas
+- [ ] Onboarding para novos usuários
+- [ ] Guia sonoro para alongamentos/exercícios
+- [ ] Alertas automáticos quando 3+ funcionários reportam mesma queixa
+- [ ] Filtro por período e turno no painel admin
+- [ ] Gráficos de evolução mês a mês no painel
+- [ ] Relatórios PDF com gráficos
+- [ ] Notificações push para desafios
+- [ ] Recursos de saúde mental (CAPS, CVV, psicólogos)
+- [ ] Integração com wearables

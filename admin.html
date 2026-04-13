@@ -54,6 +54,7 @@
             transition: background 0.3s;
         }
         .login-form button:hover { background: #15803d; }
+        .error-msg { color: #dc2626; font-size: 14px; margin-top: 10px; }
         
         /* DASHBOARD */
         .dashboard { display: none; }
@@ -102,7 +103,6 @@
             color: white;
             border-color: #16a34a;
         }
-        .tab-btn:hover { border-color: #16a34a; }
         
         /* CONTENT */
         .tab-content { display: none; }
@@ -119,53 +119,41 @@
             background: white;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             border-left: 4px solid #16a34a;
         }
-        .card h3 { color: #15803d; margin-bottom: 10px; }
-        .card-value { font-size: 32px; font-weight: bold; color: #16a34a; }
-        .card-label { color: #64748b; font-size: 12px; margin-top: 5px; }
+        .card h3 { color: #64748b; font-size: 14px; margin-bottom: 10px; }
+        .card .value { font-size: 32px; font-weight: 700; color: #15803d; }
         
         /* FORMS */
         .form-group {
             background: white;
             padding: 20px;
             border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .form-group h3 { color: #15803d; margin-bottom: 15px; }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
+        .form-group h3 { margin-bottom: 15px; color: #15803d; }
         .form-group input, .form-group textarea {
             width: 100%;
             padding: 10px;
+            margin-bottom: 10px;
             border: 1px solid #e0f2fe;
             border-radius: 6px;
-            font-size: 14px;
             font-family: inherit;
-        }
-        .form-group textarea {
-            min-height: 100px;
-            resize: vertical;
         }
         .form-group button {
             background: #16a34a;
             color: white;
-            padding: 10px 20px;
             border: none;
+            padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
-            transition: background 0.3s;
         }
         .form-group button:hover { background: #15803d; }
         
-        /* LISTS */
+        /* LIST */
         .list-item {
             background: white;
             padding: 15px;
@@ -174,65 +162,47 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .list-item-info h4 { color: #15803d; margin-bottom: 5px; }
-        .list-item-info p { color: #64748b; font-size: 12px; }
-        .list-item-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .delete-btn {
+        .list-item .info { flex: 1; }
+        .list-item .name { font-weight: 600; color: #15803d; }
+        .list-item .detail { font-size: 12px; color: #94a3b8; }
+        .list-item .delete-btn {
             background: #ef4444;
             color: white;
-            padding: 6px 12px;
             border: none;
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
-            transition: background 0.3s;
         }
-        .delete-btn:hover { background: #dc2626; }
         
-        /* SYNC STATUS */
+        /* STATUS */
         .sync-status {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background: white;
-            padding: 12px 16px;
+            padding: 12px 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            color: white;
             font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
-        .sync-status.synced { color: #16a34a; }
-        .sync-status.syncing { color: #f59e0b; }
-        .sync-status.error { color: #ef4444; }
-        .sync-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-        .sync-dot.synced { background: #16a34a; }
-        .sync-dot.syncing { background: #f59e0b; animation: pulse 1s infinite; }
-        .sync-dot.error { background: #ef4444; }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+        .sync-status.synced { background: #16a34a; }
+        .sync-status.loading { background: #f59e0b; }
+        .sync-status.error { background: #ef4444; }
     </style>
 </head>
 <body>
     <!-- LOGIN -->
     <div class="login-container" id="loginContainer">
         <h1>🌱 Canteiro Saudável</h1>
+        <h3 style="text-align: center; color: #64748b; margin-bottom: 30px; font-size: 14px;">Painel Administrativo</h3>
         <form class="login-form" onsubmit="handleLogin(event)">
             <input type="email" id="email" placeholder="Email" value="admin@canteiro.com" required>
             <input type="password" id="password" placeholder="Senha" value="admin123" required>
             <button type="submit">Entrar</button>
+            <div class="error-msg" id="errorMsg"></div>
         </form>
     </div>
 
@@ -248,70 +218,72 @@
             <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
             <button class="tab-btn" onclick="switchTab('premios')">Prêmios</button>
             <button class="tab-btn" onclick="switchTab('noticias')">Notícias</button>
-            <button class="tab-btn" onclick="switchTab('funcionarios')">Funcionários</button>
         </div>
 
         <!-- DASHBOARD TAB -->
-        <div class="tab-content active" id="dashboard">
+        <div class="tab-content active" id="dashboard-tab">
             <div class="cards">
                 <div class="card">
                     <h3>👥 Total de Funcionários</h3>
-                    <div class="card-value" id="totalFuncionarios">0</div>
+                    <div class="value" id="totalFuncionarios">0</div>
                 </div>
                 <div class="card">
                     <h3>✅ Ativos Hoje</h3>
-                    <div class="card-value" id="ativosHoje">0</div>
+                    <div class="value" id="ativosHoje">0</div>
                 </div>
                 <div class="card">
                     <h3>💧 Hidratação Média</h3>
-                    <div class="card-value" id="hidratacaoMedia">0%</div>
+                    <div class="value" id="hidratacaoMedia">0%</div>
                 </div>
                 <div class="card">
                     <h3>⚠️ Queixas Semana</h3>
-                    <div class="card-value" id="queixasSemana">0</div>
+                    <div class="value" id="queixasSemana">0</div>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <h3>📋 Funcionários Cadastrados</h3>
+                <div id="funcionariosList"></div>
             </div>
         </div>
 
         <!-- PREMIOS TAB -->
-        <div class="tab-content" id="premios">
+        <div class="tab-content" id="premios-tab">
             <div class="form-group">
                 <h3>➕ Adicionar Prêmio</h3>
-                <div class="form-grid">
-                    <input type="text" id="premioNome" placeholder="Nome do Prêmio">
-                    <input type="number" id="premiosPontos" placeholder="Pontos" min="0">
-                </div>
-                <textarea id="premioDescricao" placeholder="Descrição do prêmio"></textarea>
-                <button onclick="adicionarPremio()" style="margin-top: 10px;">Adicionar Prêmio</button>
+                <input type="text" id="premioNome" placeholder="Nome do Prêmio">
+                <input type="number" id="premioValor" placeholder="Valor em Pontos">
+                <textarea id="premioDescricao" placeholder="Descrição" rows="3"></textarea>
+                <button onclick="adicionarPremio()">Adicionar Prêmio</button>
             </div>
-            <div id="premiosList"></div>
+
+            <div class="form-group">
+                <h3>🏆 Prêmios Disponíveis</h3>
+                <div id="premiosList"></div>
+            </div>
         </div>
 
         <!-- NOTICIAS TAB -->
-        <div class="tab-content" id="noticias">
+        <div class="tab-content" id="noticias-tab">
             <div class="form-group">
-                <h3>📰 Publicar Notícia</h3>
-                <input type="text" id="noticiaTitulo" placeholder="Título da Notícia" style="margin-bottom: 10px;">
-                <textarea id="noticiaConteudo" placeholder="Conteúdo da notícia"></textarea>
-                <button onclick="publicarNoticia()" style="margin-top: 10px;">Publicar</button>
+                <h3>📢 Publicar Notícia</h3>
+                <input type="text" id="noticiaTitulo" placeholder="Título da Notícia">
+                <textarea id="noticiaConteudo" placeholder="Conteúdo" rows="4"></textarea>
+                <button onclick="adicionarNoticia()">Publicar Notícia</button>
             </div>
-            <div id="noticiasList"></div>
-        </div>
 
-        <!-- FUNCIONARIOS TAB -->
-        <div class="tab-content" id="funcionarios">
-            <div id="funcionariosList"></div>
+            <div class="form-group">
+                <h3>📰 Notícias Publicadas</h3>
+                <div id="noticiasList"></div>
+            </div>
         </div>
     </div>
 
     <!-- SYNC STATUS -->
-    <div class="sync-status" id="syncStatus">
-        <div class="sync-dot synced"></div>
-        <span>Sincronizado</span>
-    </div>
+    <div class="sync-status synced" id="syncStatus">✅ Conectado</div>
 
     <script>
-        // Firebase Config
+        // ===== FIREBASE CONFIG =====
         const firebaseConfig = {
             apiKey: "AIzaSyB32S5Eac0guxy1herefub70AIAGkgF1Rw",
             authDomain: "canteiro-saudavel.firebaseapp.com",
@@ -327,15 +299,17 @@
 
         // Initialize Firebase
         try {
+            console.log("🔄 Inicializando Firebase...");
             const app = firebase.initializeApp(firebaseConfig);
             db = firebase.database(app);
-            console.log("✅ Firebase Realtime Database inicializado!");
-            updateSyncStatus("synced", "Conectado ao Firebase");
+            console.log("✅ Firebase Realtime Database inicializado com sucesso!");
+            updateSyncStatus("synced", "✅ Conectado ao Firebase");
         } catch (error) {
             console.error("❌ Erro ao inicializar Firebase:", error);
-            updateSyncStatus("error", "Erro ao conectar Firebase");
+            updateSyncStatus("error", "❌ Erro ao conectar Firebase");
         }
 
+        // ===== LOGIN =====
         function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById("email").value;
@@ -343,197 +317,179 @@
 
             if (email === "admin@canteiro.com" && password === "admin123") {
                 isLoggedIn = true;
-                localStorage.setItem("admin-logged-in", "true");
                 document.getElementById("loginContainer").style.display = "none";
                 document.getElementById("dashboard").style.display = "block";
-                carregarDados();
+                loadDashboardData();
+                console.log("✅ Login realizado com sucesso!");
             } else {
-                alert("Email ou senha incorretos!");
+                document.getElementById("errorMsg").textContent = "Email ou senha inválidos";
+                console.error("❌ Credenciais inválidas");
             }
         }
 
         function handleLogout() {
             isLoggedIn = false;
-            localStorage.removeItem("admin-logged-in");
             document.getElementById("loginContainer").style.display = "block";
             document.getElementById("dashboard").style.display = "none";
+            document.getElementById("email").value = "admin@canteiro.com";
+            document.getElementById("password").value = "admin123";
+            console.log("✅ Logout realizado");
         }
 
+        // ===== TABS =====
         function switchTab(tabName) {
-            document.querySelectorAll(".tab-content").forEach(tab => {
-                tab.classList.remove("active");
-            });
-            document.querySelectorAll(".tab-btn").forEach(btn => {
-                btn.classList.remove("active");
-            });
-
-            document.getElementById(tabName).classList.add("active");
+            document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+            document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+            document.getElementById(tabName + "-tab").classList.add("active");
             event.target.classList.add("active");
         }
 
-        function carregarDados() {
-            updateSyncStatus("syncing", "Carregando dados...");
-
-            // Carregar funcionários COM SINCRONIZAÇÃO EM TEMPO REAL
-            db.ref("usuarios").on("value", (snapshot) => {
-                const usuarios = snapshot.val() || {};
-                const totalFuncionarios = Object.keys(usuarios).length;
-                document.getElementById("totalFuncionarios").textContent = totalFuncionarios;
-
-                let html = "";
-                Object.entries(usuarios).forEach(([id, user]) => {
-                    html += `
-                        <div class="list-item">
-                            <div class="list-item-info">
-                                <h4>${user.nome || "Sem nome"}</h4>
-                                <p>Matrícula: ${user.matricula || "N/A"} | Turno: ${user.turno || "N/A"}</p>
-                            </div>
-                        </div>
-                    `;
-                });
-                document.getElementById("funcionariosList").innerHTML = html || "<p style='text-align: center; color: #64748b;'>Nenhum funcionário cadastrado</p>";
-            });
-
-            // Carregar prêmios COM SINCRONIZAÇÃO EM TEMPO REAL
-            db.ref("premios").on("value", (snapshot) => {
-                const premios = snapshot.val() || {};
-                let html = "";
-                Object.entries(premios).forEach(([id, premio]) => {
-                    html += `
-                        <div class="list-item">
-                            <div class="list-item-info">
-                                <h4>${premio.nome}</h4>
-                                <p>${premio.pontos} pontos | ${premio.descricao}</p>
-                            </div>
-                            <div class="list-item-actions">
-                                <button class="delete-btn" onclick="deletarPremio('${id}')">Deletar</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                document.getElementById("premiosList").innerHTML = html || "<p style='text-align: center; color: #64748b;'>Nenhum prêmio cadastrado</p>";
-            });
-
-            // Carregar notícias COM SINCRONIZAÇÃO EM TEMPO REAL
-            db.ref("noticias").on("value", (snapshot) => {
-                const noticias = snapshot.val() || {};
-                let html = "";
-                Object.entries(noticias).forEach(([id, noticia]) => {
-                    html += `
-                        <div class="list-item">
-                            <div class="list-item-info">
-                                <h4>${noticia.titulo}</h4>
-                                <p>${noticia.conteudo}</p>
-                            </div>
-                            <div class="list-item-actions">
-                                <button class="delete-btn" onclick="deletarNoticia('${id}')">Deletar</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                document.getElementById("noticiasList").innerHTML = html || "<p style='text-align: center; color: #64748b;'>Nenhuma notícia publicada</p>";
-            });
-
-            updateSyncStatus("synced", "Sincronizado com Firebase");
-        }
-
-        function adicionarPremio() {
-            const nome = document.getElementById("premioNome").value;
-            const pontos = document.getElementById("premiosPontos").value;
-            const descricao = document.getElementById("premioDescricao").value;
-
-            if (!nome || !pontos) {
-                alert("Preencha todos os campos!");
+        // ===== DASHBOARD DATA =====
+        function loadDashboardData() {
+            updateSyncStatus("loading", "⏳ Carregando dados...");
+            
+            if (!db) {
+                console.error("❌ Firebase não inicializado");
+                updateSyncStatus("error", "❌ Firebase não inicializado");
                 return;
             }
 
-            updateSyncStatus("syncing", "Salvando prêmio...");
+            // Load funcionários
+            db.ref("usuarios").on("value", (snapshot) => {
+                const data = snapshot.val() || {};
+                const funcionarios = Object.values(data);
+                
+                document.getElementById("totalFuncionarios").textContent = funcionarios.length;
+                
+                const hoje = new Date().toISOString().split("T")[0];
+                const ativos = funcionarios.filter(f => f.ultimoCheckin === hoje).length;
+                document.getElementById("ativosHoje").textContent = ativos;
 
-            db.ref("premios").push({
-                nome,
-                pontos: parseInt(pontos),
-                descricao,
-                data_criacao: new Date().toISOString()
+                // Renderizar lista
+                let html = "";
+                funcionarios.forEach(f => {
+                    html += `
+                        <div class="list-item">
+                            <div class="info">
+                                <div class="name">${f.nome || "N/A"}</div>
+                                <div class="detail">Matrícula: ${f.matricula || "N/A"} | Turno: ${f.turno || "N/A"}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById("funcionariosList").innerHTML = html || "<p>Nenhum funcionário cadastrado</p>";
+                
+                updateSyncStatus("synced", "✅ Dados carregados");
+                console.log("✅ Dados carregados:", funcionarios.length, "funcionários");
+            }, (error) => {
+                console.error("❌ Erro ao carregar dados:", error);
+                updateSyncStatus("error", "❌ Erro ao carregar dados");
+            });
+
+            // Load prêmios
+            db.ref("premios").on("value", (snapshot) => {
+                const data = snapshot.val() || {};
+                let html = "";
+                Object.entries(data).forEach(([id, premio]) => {
+                    html += `
+                        <div class="list-item">
+                            <div class="info">
+                                <div class="name">${premio.nome}</div>
+                                <div class="detail">${premio.valor} pontos - ${premio.descricao}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deletarPremio('${id}')">Deletar</button>
+                        </div>
+                    `;
+                });
+                document.getElementById("premiosList").innerHTML = html || "<p>Nenhum prêmio cadastrado</p>";
+            });
+
+            // Load notícias
+            db.ref("noticias").on("value", (snapshot) => {
+                const data = snapshot.val() || {};
+                let html = "";
+                Object.entries(data).forEach(([id, noticia]) => {
+                    html += `
+                        <div class="list-item">
+                            <div class="info">
+                                <div class="name">${noticia.titulo}</div>
+                                <div class="detail">${noticia.conteudo}</div>
+                            </div>
+                            <button class="delete-btn" onclick="deletarNoticia('${id}')">Deletar</button>
+                        </div>
+                    `;
+                });
+                document.getElementById("noticiasList").innerHTML = html || "<p>Nenhuma notícia publicada</p>";
+            });
+        }
+
+        // ===== PREMIOS =====
+        function adicionarPremio() {
+            const nome = document.getElementById("premioNome").value;
+            const valor = document.getElementById("premioValor").value;
+            const descricao = document.getElementById("premioDescricao").value;
+
+            if (!nome || !valor) {
+                alert("Preencha todos os campos");
+                return;
+            }
+
+            const id = Date.now();
+            db.ref("premios/" + id).set({
+                nome, valor: parseInt(valor), descricao
             }).then(() => {
                 document.getElementById("premioNome").value = "";
-                document.getElementById("premiosPontos").value = "";
+                document.getElementById("premioValor").value = "";
                 document.getElementById("premioDescricao").value = "";
-                updateSyncStatus("synced", "Prêmio adicionado!");
-            }).catch(error => {
-                console.error("Erro:", error);
-                updateSyncStatus("error", "Erro ao salvar");
-            });
+                console.log("✅ Prêmio adicionado");
+            }).catch(error => console.error("❌ Erro:", error));
         }
 
         function deletarPremio(id) {
             if (confirm("Deletar este prêmio?")) {
-                updateSyncStatus("syncing", "Deletando...");
-                db.ref(`premios/${id}`).remove().then(() => {
-                    updateSyncStatus("synced", "Prêmio deletado!");
-                }).catch(error => {
-                    console.error("Erro:", error);
-                    updateSyncStatus("error", "Erro ao deletar");
-                });
+                db.ref("premios/" + id).remove().then(() => {
+                    console.log("✅ Prêmio deletado");
+                }).catch(error => console.error("❌ Erro:", error));
             }
         }
 
-        function publicarNoticia() {
+        // ===== NOTICIAS =====
+        function adicionarNoticia() {
             const titulo = document.getElementById("noticiaTitulo").value;
             const conteudo = document.getElementById("noticiaConteudo").value;
 
             if (!titulo || !conteudo) {
-                alert("Preencha todos os campos!");
+                alert("Preencha todos os campos");
                 return;
             }
 
-            updateSyncStatus("syncing", "Publicando...");
-
-            db.ref("noticias").push({
-                titulo,
-                conteudo,
-                data_publicacao: new Date().toISOString(),
-                autor: "Admin"
+            const id = Date.now();
+            db.ref("noticias/" + id).set({
+                titulo, conteudo, data: new Date().toISOString()
             }).then(() => {
                 document.getElementById("noticiaTitulo").value = "";
                 document.getElementById("noticiaConteudo").value = "";
-                updateSyncStatus("synced", "Notícia publicada!");
-            }).catch(error => {
-                console.error("Erro:", error);
-                updateSyncStatus("error", "Erro ao publicar");
-            });
+                console.log("✅ Notícia publicada");
+            }).catch(error => console.error("❌ Erro:", error));
         }
 
         function deletarNoticia(id) {
             if (confirm("Deletar esta notícia?")) {
-                updateSyncStatus("syncing", "Deletando...");
-                db.ref(`noticias/${id}`).remove().then(() => {
-                    updateSyncStatus("synced", "Notícia deletada!");
-                }).catch(error => {
-                    console.error("Erro:", error);
-                    updateSyncStatus("error", "Erro ao deletar");
-                });
+                db.ref("noticias/" + id).remove().then(() => {
+                    console.log("✅ Notícia deletada");
+                }).catch(error => console.error("❌ Erro:", error));
             }
         }
 
+        // ===== SYNC STATUS =====
         function updateSyncStatus(status, message) {
-            const syncStatus = document.getElementById("syncStatus");
-            const dot = syncStatus.querySelector(".sync-dot");
-            const span = syncStatus.querySelector("span");
-
-            syncStatus.className = `sync-status ${status}`;
-            dot.className = `sync-dot ${status}`;
-            span.textContent = message;
+            const el = document.getElementById("syncStatus");
+            el.textContent = message;
+            el.className = "sync-status " + status;
         }
 
-        // Check if already logged in
-        window.addEventListener("load", () => {
-            if (localStorage.getItem("admin-logged-in")) {
-                document.getElementById("loginContainer").style.display = "none";
-                document.getElementById("dashboard").style.display = "block";
-                isLoggedIn = true;
-                carregarDados();
-            }
-        });
+        // Log inicial
+        console.log("🚀 Painel Admin carregado");
     </script>
 </body>
 </html>

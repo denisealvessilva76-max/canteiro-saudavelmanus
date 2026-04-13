@@ -1,78 +1,123 @@
-// Service Worker para Canteiro Saudável PWA
-// Versão: 1.0.0
+// Service Worker para Canteiro Saudável
+// Versão: 2.0.0 - Melhorado com Cache First + Network First
 
-const CACHE_NAME = 'canteiro-saudavel-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/offline.html'
+const CACHE_NAME = 'canteiro-saudavel-v2';
+const OFFLINE_URL = '/canteiro-saudavelmanus/offline.html';
+
+const ASSETS_TO_CACHE = [
+  '/canteiro-saudavelmanus/',
+  '/canteiro-saudavelmanus/index.html',
+  '/canteiro-saudavelmanus/app.html',
+  '/canteiro-saudavelmanus/admin.html',
+  '/canteiro-saudavelmanus/health-check.html',
+  '/canteiro-saudavelmanus/homepage.html',
+  '/canteiro-saudavelmanus/firebase-config.js',
+  '/canteiro-saudavelmanus/manifest.json',
+  '/canteiro-saudavelmanus/offline.html'
 ];
 
-// Instalação do Service Worker
+// Instalar Service Worker
 self.addEventListener('install', (event) => {
-  console.log('[SW] Instalando Service Worker...');
+  console.log('🔧 Service Worker instalando...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[SW] Cache aberto');
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('📦 Cacheando assets principais...');
+      return cache.addAll(ASSETS_TO_CACHE).catch(err => {
+        console.warn('⚠️ Alguns assets não puderam ser cacheados:', err);
+      });
+    })
   );
+  self.skipWaiting();
 });
 
-// Ativação do Service Worker
+// Ativar Service Worker
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Ativando Service Worker...');
+  console.log('✅ Service Worker ativado');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[SW] Removendo cache antigo:', cacheName);
+            console.log('🗑️ Removendo cache antigo:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    })
   );
+  self.clients.claim();
 });
 
-// Estratégia de cache: Network First, fallback para Cache
+// Interceptar requisições
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Se a resposta for válida, clona e armazena no cache
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        // Se a rede falhar, busca do cache
-        return caches.match(event.request).then((cachedResponse) => {
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          // Se não houver cache, retorna página offline
-          if (event.request.mode === 'navigate') {
-            return caches.match('/offline.html');
-          }
-        });
-      })
-  );
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Ignorar requisições de outros domínios (Firebase, CDN, etc)
+  if (url.origin !== location.origin) {
+    return;
+  }
+
+  // Estratégia: Network First para dados, Cache First para assets
+  if (request.method === 'GET') {
+    if (isDataRequest(url)) {
+      // Network First para dados do Firebase
+      event.respondWith(networkFirst(request));
+    } else {
+      // Cache First para assets estáticos
+      event.respondWith(cacheFirst(request));
+    }
+  }
 });
+
+// Cache First: tenta cache primeiro, depois rede
+async function cacheFirst(request) {
+  const cached = await caches.match(request);
+  if (cached) {
+    return cached;
+  }
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    console.warn('❌ Fetch falhou:', error);
+    return caches.match(OFFLINE_URL);
+  }
+}
+
+// Network First: tenta rede primeiro, depois cache
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    console.warn('⚠️ Rede indisponível, usando cache');
+    const cached = await caches.match(request);
+    if (cached) {
+      return cached;
+    }
+    return caches.match(OFFLINE_URL);
+  }
+}
+
+// Verificar se é requisição de dados
+function isDataRequest(url) {
+  return url.pathname.includes('/api/') || 
+         url.hostname.includes('firebase') ||
+         url.hostname.includes('firebaseio');
+}
 
 // Sincronização em background
 self.addEventListener('sync', (event) => {
-  console.log('[SW] Sincronização em background:', event.tag);
+  console.log('🔄 Sincronização em background:', event.tag);
   if (event.tag === 'sync-health-data') {
     event.waitUntil(syncHealthData());
   }
@@ -81,59 +126,25 @@ self.addEventListener('sync', (event) => {
 // Função para sincronizar dados de saúde
 async function syncHealthData() {
   try {
-    // Busca dados pendentes do IndexedDB
-    const pendingData = await getPendingData();
-    
-    if (pendingData.length === 0) {
-      console.log('[SW] Nenhum dado pendente para sincronizar');
-      return;
-    }
-    
-    // Envia dados para o servidor
-    for (const data of pendingData) {
-      const response = await fetch('/api/sync', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      
-      if (response.ok) {
-        console.log('[SW] Dados sincronizados:', data.type);
-        await markAsSynced(data.id);
-      }
-    }
+    console.log('📤 Sincronizando dados de saúde...');
+    // TODO: Implementar sincronização com Firebase
   } catch (error) {
-    console.error('[SW] Erro ao sincronizar dados:', error);
+    console.error('❌ Erro ao sincronizar:', error);
   }
-}
-
-// Função auxiliar para buscar dados pendentes (placeholder)
-async function getPendingData() {
-  // TODO: Implementar busca no IndexedDB
-  return [];
-}
-
-// Função auxiliar para marcar como sincronizado (placeholder)
-async function markAsSynced(id) {
-  // TODO: Implementar atualização no IndexedDB
-  console.log('[SW] Marcado como sincronizado:', id);
 }
 
 // Notificações Push
 self.addEventListener('push', (event) => {
-  console.log('[SW] Push recebido:', event);
+  console.log('📢 Push recebido');
   
   const data = event.data ? event.data.json() : {};
   const title = data.title || 'Canteiro Saudável';
   const options = {
     body: data.body || 'Nova notificação',
-    icon: '/icon-192.png',
-    badge: '/icon-96.png',
+    icon: '/canteiro-saudavelmanus/icon-192.png',
+    badge: '/canteiro-saudavelmanus/icon-96.png',
     vibrate: [200, 100, 200],
     data: data.data || {},
-    actions: data.actions || []
   };
   
   event.waitUntil(
@@ -143,24 +154,24 @@ self.addEventListener('push', (event) => {
 
 // Clique em notificação
 self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notificação clicada:', event);
+  console.log('👆 Notificação clicada');
   event.notification.close();
   
-  const urlToOpen = event.notification.data?.url || '/';
+  const urlToOpen = event.notification.data?.url || '/canteiro-saudavelmanus/';
   
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        // Se já houver uma janela aberta, foca nela
         for (const client of clientList) {
           if (client.url === urlToOpen && 'focus' in client) {
             return client.focus();
           }
         }
-        // Caso contrário, abre nova janela
         if (clients.openWindow) {
           return clients.openWindow(urlToOpen);
         }
       })
   );
 });
+
+console.log('🚀 Service Worker v2.0.0 carregado');

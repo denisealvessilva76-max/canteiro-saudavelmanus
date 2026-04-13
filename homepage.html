@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canteiro Saudável - Sistema de Saúde Ocupacional</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #15803d;
+            font-size: 36px;
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 4px solid #16a34a;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .card h2 {
+            color: #15803d;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+
+        .card p {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .card a {
+            display: inline-block;
+            background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .card a:hover {
+            background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+        }
+
+        .info-box {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #0ea5e9;
+        }
+
+        .info-box h3 {
+            color: #15803d;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            color: #64748b;
+        }
+
+        .info-box li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .info-box li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .credentials {
+            background: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .credentials-title {
+            font-weight: 600;
+            color: #15803d;
+            margin-bottom: 10px;
+        }
+
+        .credential-item {
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .credential-item strong {
+            color: #15803d;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #16a34a;
+            margin-top: 10px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #16a34a;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 28px;
+            }
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🌱</div>
+            <h1>Canteiro Saudável</h1>
+            <p class="subtitle">Sistema de Saúde Ocupacional para Canteiros de Obras</p>
+        </header>
+
+        <div class="cards">
+            <!-- APP MOBILE -->
+            <div class="card">
+                <div class="card-icon">📱</div>
+                <h2>App do Funcionário</h2>
+                <p>Acesse o aplicativo para fazer check-in diário, registrar sua saúde, hidratação e participar dos desafios de bem-estar.</p>
+                <a href="./app.html">Abrir App →</a>
+                <div class="status">
+                    <div class="status-dot"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+
+            <!-- PAINEL ADMIN -->
+            <div class="card">
+                <div class="card-icon">🖥️</div>
+                <h2>Painel Administrativo</h2>
+                <p>Gerenciar funcionários, criar prêmios, publicar notícias e acompanhar estatísticas de saúde em tempo real.</p>
+                <a href="./admin.html">Acessar Painel →</a>
+                <div class="status">
+                    <div class="status-dot"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>📋 Funcionalidades Principais</h3>
+            <ul>
+                <li>Check-in diário com avaliação de saúde</li>
+                <li>Rastreamento de hidratação com lembretes</li>
+                <li>Registro de dores e ergonomia</li>
+                <li>Sistema de pontos e prêmios</li>
+                <li>Notícias e comunicados em tempo real</li>
+                <li>Dashboard com estatísticas de saúde</li>
+                <li>Sincronização automática com Firebase</li>
+                <li>Suporte a múltiplos turnos (Diurno/Noturno)</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h3>🔐 Credenciais de Acesso</h3>
+            <div class="credentials">
+                <div class="credentials-title">Painel Administrativo:</div>
+                <div class="credential-item"><strong>Email:</strong> admin@canteiro.com</div>
+                <div class="credential-item"><strong>Senha:</strong> admin123</div>
+            </div>
+            <div class="credentials" style="margin-top: 15px;">
+                <div class="credentials-title">App do Funcionário:</div>
+                <div class="credential-item">Faça cadastro com sua matrícula e turno</div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Canteiro Saudável © 2026 - Sistema de Saúde Ocupacional</p>
+            <p>Desenvolvido com ❤️ para melhorar a saúde dos trabalhadores</p>
+            <p style="margin-top: 10px; color: #94a3b8;">Versão 1.0 | Firebase Realtime Database | GitHub Pages</p>
+        </footer>
+    </div>
+</body>
+</html>

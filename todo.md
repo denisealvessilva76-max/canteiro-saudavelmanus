@@ -413,6 +413,109 @@
 
 ---
 
+## 🔄 RECONSTRUÇÃO COMPLETA (NOVO ESCOPO - 15/04/2026)
+
+### FASE 2: Restaurar Estrutura do App Mobile (Screens, Navigation, Auth)
+- [ ] Criar estrutura de pastas para screens
+- [ ] Implementar screen de Login/Registro com matrícula
+- [ ] Implementar Home screen com dashboard
+- [ ] Implementar tab navigation (Home, Ergonomia, Saúde, Avisos, Perfil)
+- [ ] Configurar Firebase Auth (email/password)
+- [ ] Implementar logout e persistência de login
+- [ ] Restaurar design verde do Canteiro Saudável
+
+### FASE 3: Implementar Perfil e Dados Pessoais
+- [ ] Criar screen de Perfil com avatar
+- [ ] Implementar formulário de dados pessoais (Nome, Matrícula, Cargo, Peso, Altura, Turno)
+- [ ] Salvar dados no Firestore
+- [ ] Implementar edição de perfil
+- [ ] Adicionar seleção de avatar
+
+### FASE 4: Implementar Hidratação com Copos e Cálculo Automático
+- [ ] Criar screen de Hidratação
+- [ ] Implementar cálculo de meta diária (peso, altura, turno)
+- [ ] Criar componente visual de copos (clicáveis) com dosagens de ml
+- [ ] Implementar garrafa que enche conforme progresso
+- [ ] Salvar registro de hidratação no Firestore
+- [ ] Implementar histórico de hidratação
+- [ ] Criar desafios de hidratação (Iniciante, Intermediária, Mestre)
+
+### FASE 5: Implementar Desafios com Fotos e Progresso
+- [ ] Criar screen de Desafios/Conquistas
+- [ ] Implementar lista de desafios disponíveis
+- [ ] Criar screen de detalhe de desafio
+- [ ] Implementar upload de fotos (categorias: Pesagem, Refeição, Atividade, Outro)
+- [ ] Implementar descrição opcional de fotos
+- [ ] Implementar calendário de progresso
+- [ ] Implementar barra de progresso do desafio
+- [ ] Salvar fotos no Firebase Storage
+- [ ] Salvar metadados de desafios no Firestore
+
+### FASE 6: Implementar Check-in Diário e Saúde Mental
+- [ ] Criar screen de Check-in
+- [ ] Implementar campos: bem-estar, pressão arterial, queixas
+- [ ] Implementar formulário de queixas com detalhes
+- [ ] Criar screen de Saúde Mental
+- [ ] Implementar recursos de apoio (psicólogo, assistente social)
+- [ ] Implementar contatos com WhatsApp
+- [ ] Implementar técnicas de respiração (4-7-8)
+- [ ] Implementar mapa de saúde mental
+- [ ] Salvar check-in no Firestore
+
+### FASE 7: Implementar Comunicados, Avisos e Recompensas
+- [ ] Criar screen de Comunicados/Avisos
+- [ ] Implementar filtros (Todos, Urgente, Informativo)
+- [ ] Implementar cards de comunicados
+- [ ] Implementar status "Lido/Não Lido"
+- [ ] Criar screen de Recompensas
+- [ ] Implementar exibição de pontos disponíveis
+- [ ] Implementar lista de prêmios
+- [ ] Implementar resgate de prêmios
+- [ ] Sincronizar comunicados com admin panel
+
+### FASE 8: Implementar Sincronização Firebase Offline-First
+- [ ] Implementar AsyncStorage/MMKV para cache local
+- [ ] Implementar fila de pendências para operações offline
+- [ ] Implementar sincronização automática quando conectado
+- [ ] Implementar indicador de sincronização
+- [ ] Testar funcionamento offline
+
+### FASE 9: Reconstruir Admin Panel com Dashboard e Gráficos
+- [ ] Criar novo design do admin panel (verde como app)
+- [ ] Implementar login com Firebase Auth
+- [ ] Criar dashboard com estatísticas em tempo real
+- [ ] Implementar cards: Total de funcionários, Ativos hoje, Hidratação média, Queixas
+- [ ] Implementar gráficos de evolução mensal
+- [ ] Implementar lista de funcionários
+- [ ] Implementar abas: Dashboard, Funcionários, Desafios, Comunicados
+
+### FASE 10: Implementar Acompanhamento de Empregados e Relatórios
+- [ ] Criar screen de acompanhamento de hidratação por empregado
+- [ ] Criar screen de evolução de empregado (gráficos)
+- [ ] Implementar visualização de desafios com fotos
+- [ ] Implementar visualização de check-in
+- [ ] Implementar filtros por período e turno
+- [ ] Implementar geração de relatórios em PDF
+- [ ] Implementar exportação de dados
+
+### FASE 11: Testes End-to-End e Ajustes Finais
+- [ ] Testar fluxo completo de login/registro
+- [ ] Testar hidratação com copos
+- [ ] Testar upload de fotos de desafios
+- [ ] Testar check-in diário
+- [ ] Testar sincronização offline
+- [ ] Testar admin panel
+- [ ] Testar relatórios
+- [ ] Corrigir bugs e ajustar UI/UX
+
+### FASE 12: Entregar Projeto Completo
+- [ ] Salvar checkpoint final
+- [ ] Gerar APK
+- [ ] Documentar funcionalidades
+- [ ] Entregar ao usuário
+
+---
+
 ## 🍎 Orientações Nutricionais (Nova Funcionalidade)
 - [x] Criar banco de dicas nutricionais simples
 - [x] Dicas específicas para construção civil/mineração/indústria

@@ -251,6 +251,15 @@ export default function HomeScreen() {
             </Text>
           </View>
 
+          {/* BOTÃO ADMIN PANEL */}
+          <TouchableOpacity
+            style={[styles.adminBtn, { backgroundColor: "#0a7ea4", borderColor: "#0a7ea4" }]}
+            onPress={() => router.push("/admin-panel-novo" as any)}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.adminText, { color: "#fff" }]}>🔐 Painel Administrativo</Text>
+          </TouchableOpacity>
+
           {/* BOTÃO LIMPAR DADOS */}
           <TouchableOpacity
             style={[styles.resetBtn, { borderColor: colors.error }]}
@@ -269,7 +278,7 @@ export default function HomeScreen() {
             }}
             activeOpacity={0.7}
           >
-            <Text style={[styles.resetText, { color: colors.error }]}>🗑️ Limpar Dados e Recomeçar</Text>
+            <Text style={[{ fontSize: 14, fontWeight: "700", letterSpacing: 0.5 }, { color: colors.error }]}>🗑️ Limpar Dados e Recomeçar</Text>
           </TouchableOpacity>
 
           <View style={{ height: 32 }} />
@@ -332,7 +341,9 @@ const styles = StyleSheet.create({
   quickLabel: { fontSize: 13, fontWeight: "700", letterSpacing: -0.1 },
   statsRow: { flexDirection: "row", gap: 10, marginTop: 12 },
   statBox: { flex: 1, borderRadius: 16, padding: 14, alignItems: "center" },
-  statValue: { fontSize: 24, fontWeight: "900", letterSpacing: -0.5 },
+  statValue: { fontSize: 18, fontWeight: "700", marginBottom: 4 },
+  adminBtn: { borderWidth: 2, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 16, marginBottom: 12, alignItems: "center" },
+  adminText: { fontSize: 14, fontWeight: "700", letterSpacing: 0.5 },
   statLabel: { fontSize: 11, marginTop: 3, fontWeight: "500" },
   gamRow: { flexDirection: "row", gap: 10 },
   gamCard: {
@@ -351,5 +362,4 @@ const styles = StyleSheet.create({
     borderRadius: 16, padding: 14, borderWidth: 1.5,
     alignItems: "center", marginTop: 4,
   },
-  resetText: { fontSize: 14, fontWeight: "600" },
 });

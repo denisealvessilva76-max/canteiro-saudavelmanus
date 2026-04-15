@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Badge, getPressureBadgeVariant, getPressureLabel } from "@/components/ui/badge";
 import { useHealthData } from "@/hooks/use-health-data";
 import { useHydration } from "@/hooks/use-hydration";
+import { HydrationCups } from "@/components/hydration-cups";
 import { useAdminNotifications } from "@/hooks/use-admin-notifications";
 import { SYMPTOMS } from "@/lib/types";
 import * as Haptics from "expo-haptics";
@@ -21,6 +22,7 @@ export default function SaudeScreen() {
   const { syncBloodPressure, syncSymptoms } = useFirebaseSync({ matricula, enabled: !!matricula });
   const [waterAmount, setWaterAmount] = useState("");
   const [showHydrationForm, setShowHydrationForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<'hidratacao' | 'pressao' | 'sintomas'>('hidratacao');
 
   // Carregar matrícula do AsyncStorage
   useEffect(() => {
@@ -76,6 +78,11 @@ export default function SaudeScreen() {
       setLatestClassification(classification as any);
     }
   }, [pressureReadings]);
+
+  const handleHydrationUpdate = (totalMl: number) => {
+    // Callback quando hidratação é atualizada
+    console.log("Hidratação atualizada:", totalMl);
+  };
 
   const handleAddPressure = async () => {
     if (!systolic || !diastolic) {
@@ -191,6 +198,53 @@ export default function SaudeScreen() {
             <Text className="text-base text-muted">Monitore sua saúde ocupacional</Text>
           </View>
 
+          {/* Abas */}
+          <View className="flex-row gap-2 bg-surface rounded-xl p-1">
+            <TouchableOpacity
+              onPress={() => setActiveTab('hidratacao')}
+              className={`flex-1 py-2 px-3 rounded-lg items-center ${
+                activeTab === 'hidratacao' ? 'bg-primary' : 'bg-transparent'
+              }`}
+            >
+              <Text className={`font-semibold ${
+                activeTab === 'hidratacao' ? 'text-white' : 'text-foreground'
+              }`}>
+                💧 Hidratação
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setActiveTab('pressao')}
+              className={`flex-1 py-2 px-3 rounded-lg items-center ${
+                activeTab === 'pressao' ? 'bg-primary' : 'bg-transparent'
+              }`}
+            >
+              <Text className={`font-semibold ${
+                activeTab === 'pressao' ? 'text-white' : 'text-foreground'
+              }`}>
+                🫀 Pressão
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setActiveTab('sintomas')}
+              className={`flex-1 py-2 px-3 rounded-lg items-center ${
+                activeTab === 'sintomas' ? 'bg-primary' : 'bg-transparent'
+              }`}
+            >
+              <Text className={`font-semibold ${
+                activeTab === 'sintomas' ? 'text-white' : 'text-foreground'
+              }`}>
+                🤒 Sintomas
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Conteúdo das Abas */}
+          {activeTab === 'hidratacao' && (
+            <HydrationCups onUpdate={handleHydrationUpdate} />
+          )}
+
+          {activeTab === 'pressao' && (
+            <>
           {/* Seção de Pressão Arterial */}
           <Card className="gap-4">
             <Text className="text-lg font-semibold text-foreground">Pressão Arterial</Text>
@@ -267,7 +321,11 @@ export default function SaudeScreen() {
               )}
             </View>
           </Card>
+            </>
+          )}
 
+          {activeTab === 'sintomas' && (
+            <>
           {/* Seção de Sintomas */}
           <Card className="gap-4">
             <Text className="text-lg font-semibold text-foreground">Sintomas</Text>
@@ -595,14 +653,16 @@ export default function SaudeScreen() {
             </TouchableOpacity>
           </Card>
 
-          {/* Alerta de Pressão Crítica */}
-          {latestClassification === "hipertensao" && (
-            <Card className="bg-error/10 border border-error gap-2">
-              <Text className="text-sm font-semibold text-error">🚨 Atenção</Text>
-              <Text className="text-sm text-foreground leading-relaxed">
-                Sua pressão arterial está elevada. Procure o SESMT ou um médico para avaliação.
-              </Text>
-            </Card>
+            {/* Alerta de Pressão Crítica */}
+            {latestClassification === "hipertensao" && (
+              <Card className="bg-error/10 border border-error gap-2">
+                <Text className="text-sm font-semibold text-error">🚨 Atenção</Text>
+                <Text className="text-sm text-foreground leading-relaxed">
+                  Sua pressão arterial está elevada. Procure o SESMT ou um médico para avaliação.
+                </Text>
+              </Card>
+            )}
+            </>
           )}
         </View>
       </ScrollView>

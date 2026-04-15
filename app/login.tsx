@@ -103,12 +103,8 @@ export default function LoginScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
 
-      const onboardingCompleted = await AsyncStorage.getItem("onboarding:completed");
-      if (!onboardingCompleted) {
-        router.replace("/onboarding");
-      } else {
-        router.replace("/(tabs)");
-      }
+      // Ir direto para tabs (onboarding removido)
+      router.replace("/(tabs)");
     } catch (err) {
       console.error("[LOGIN] Login failed:", err);
       setError("Erro ao fazer login. Tente novamente.");

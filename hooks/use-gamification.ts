@@ -13,7 +13,7 @@ import {
 } from "@/lib/gamification";
 import { useMedalNotifications } from "./use-medal-notifications";
 
-const GAMIFICATION_STORAGE_KEY = "gamification_data";
+const GAMIFICATION_STORAGE_KEY = "health:gamification";
 
 // Sistema de pontos por atividade (REBALANCEADO para premiar consistência)
 export const POINTS_SYSTEM = {

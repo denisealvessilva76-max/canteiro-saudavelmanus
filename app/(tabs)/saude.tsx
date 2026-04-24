@@ -165,7 +165,14 @@ export default function SaudeScreen() {
       Alert.alert("Erro", "Digite uma quantidade válida de água (em ml)");
       return;
     }
-    await logWaterIntake();
+    
+    // Calcular quantos copos de 200ml equivalem
+    const cups = Math.ceil(amount / 200);
+    await logWaterIntake(cups);
+    
+    // Sincronização agora é tratada dentro do logWaterIntake no hook useHydration
+    // que já utiliza a nova fila offline e chaves padronizadas.
+
     setWaterAmount("");
     setShowHydrationForm(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -180,6 +187,7 @@ export default function SaudeScreen() {
   const handleAddCup = async () => {
     await logWaterIntake(1);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    // Sincronização tratada internamente no hook useHydration
   };
 
   // Sintomas

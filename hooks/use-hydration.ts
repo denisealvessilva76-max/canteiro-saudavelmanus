@@ -81,13 +81,19 @@ export function useHydration() {
    */
   const calculateDailyGoal = async (): Promise<number> => {
     try {
-      const profileStr = await AsyncStorage.getItem("worker_profile");
+      // Tentar carregar da chave padronizada "employee:profile" primeiro, com fallback para "worker_profile"
+      let profileStr = await AsyncStorage.getItem("employee:profile");
+      if (!profileStr) {
+        profileStr = await AsyncStorage.getItem("worker_profile");
+      }
+      
       if (!profileStr) return 2000; // meta padrão
       
       const profile = JSON.parse(profileStr);
-      const peso = parseFloat(profile.peso) || 70;
-      const altura = parseFloat(profile.altura) || 170;
-      const tipoTrabalho = profile.tipoTrabalho || "moderado";
+      
+      // Padronizar campos: weight (novo) vs peso (antigo), workType (novo) vs tipoTrabalho (antigo)
+      const peso = parseFloat(profile.weight || profile.peso) || 70;
+      const tipoTrabalho = profile.workType || profile.tipoTrabalho || "moderado";
       
       // Fórmula: 35ml por kg de peso
       let metaBase = peso * 35;

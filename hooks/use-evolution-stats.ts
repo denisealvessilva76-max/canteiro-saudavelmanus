@@ -63,8 +63,8 @@ export function useEvolutionStats(period: PeriodType = "30") {
       const periodStart = now - days * 24 * 60 * 60 * 1000;
       const previousStart = periodStart - previousDays * 24 * 60 * 60 * 1000;
 
-      // Carregar check-ins
-      const checkInsData = await AsyncStorage.getItem("health_check_ins");
+      // Carregar check-ins (chave padronizada)
+      const checkInsData = await AsyncStorage.getItem("health:check-ins");
       const allCheckIns: CheckIn[] = checkInsData ? JSON.parse(checkInsData) : [];
       
       const currentCheckIns = allCheckIns.filter(c => c.timestamp >= periodStart);
@@ -72,12 +72,12 @@ export function useEvolutionStats(period: PeriodType = "30") {
         c => c.timestamp >= previousStart && c.timestamp < periodStart
       );
 
-      // Carregar hidratação
-      const hydrationData = await AsyncStorage.getItem("hydration_data");
-      const allHydration = hydrationData ? JSON.parse(hydrationData) : {};
+      // Carregar hidratação (chave padronizada)
+      const hydrationData = await AsyncStorage.getItem("health:hydration");
+      const allHydration = hydrationData ? JSON.parse(hydrationData) : [];
       
-      // Carregar pressão arterial
-      const bpData = await AsyncStorage.getItem("blood_pressure_history");
+      // Carregar pressão arterial (chave padronizada)
+      const bpData = await AsyncStorage.getItem("health:blood-pressure");
       const allBP: PressureReading[] = bpData ? JSON.parse(bpData) : [];
       
       const currentBP = allBP.filter(bp => bp.timestamp >= periodStart);
@@ -85,9 +85,9 @@ export function useEvolutionStats(period: PeriodType = "30") {
         bp => bp.timestamp >= previousStart && bp.timestamp < periodStart
       );
 
-      // Carregar desafios
-      const challengesData = await AsyncStorage.getItem("challenge_progress");
-      const allChallenges = challengesData ? JSON.parse(challengesData) : {};
+      // Carregar desafios (chave padronizada)
+      const challengesData = await AsyncStorage.getItem("active_challenges");
+      const allChallenges = challengesData ? JSON.parse(challengesData) : [];
 
       // Calcular estatísticas de check-ins
       const checkInStats = calculateCheckInStats(
@@ -189,7 +189,7 @@ function calculateCheckInStats(
 }
 
 function calculateHydrationStats(
-  hydrationData: any,
+  hydrationData: any[],
   periodStart: number,
   previousStart: number,
   days: number
@@ -203,12 +203,12 @@ function calculateHydrationStats(
   for (let i = 0; i < days; i++) {
     const date = new Date(periodStart + i * 24 * 60 * 60 * 1000);
     const dateKey = date.toISOString().split("T")[0];
-    const dayData = hydrationData[dateKey];
+    const dayData = hydrationData.find(h => h.date === dateKey);
 
     if (dayData) {
-      const ml = dayData.consumed || 0;
+      const ml = dayData.waterIntake || 0;
       totalMl += ml;
-      if (ml >= (dayData.goal || 2000)) {
+      if (ml >= (dayData.dailyGoal || 2000)) {
         goalAchieved++;
       }
       dailyData.push({ date: dateKey, ml });
@@ -221,9 +221,9 @@ function calculateHydrationStats(
   for (let i = 0; i < days; i++) {
     const date = new Date(previousStart + i * 24 * 60 * 60 * 1000);
     const dateKey = date.toISOString().split("T")[0];
-    const dayData = hydrationData[dateKey];
+    const dayData = hydrationData.find(h => h.date === dateKey);
     if (dayData) {
-      previousTotalMl += dayData.consumed || 0;
+      previousTotalMl += dayData.waterIntake || 0;
     }
   }
 
@@ -329,16 +329,16 @@ function calculateBloodPressureStats(
   };
 }
 
-function calculateChallengeStats(challenges: any) {
+function calculateChallengeStats(challenges: any[]) {
   let completed = 0;
   let inProgress = 0;
   let totalPoints = 0;
 
-  Object.values(challenges).forEach((challenge: any) => {
-    if (challenge.completed) {
+  challenges.forEach((challenge: any) => {
+    if (challenge.status === "completed") {
       completed++;
       totalPoints += challenge.points || 0;
-    } else if (challenge.progress > 0) {
+    } else if (challenge.status === "active") {
       inProgress++;
     }
   });

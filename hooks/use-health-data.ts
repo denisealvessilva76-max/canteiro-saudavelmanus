@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveToFirebase, pushToFirebase } from "@/lib/firebase";
 import { syncCheckInToPostgres, syncPressureToPostgres, syncComplaintToPostgres } from "@/lib/sync-api";
+import { useFirebaseSync } from "@/hooks/use-firebase-sync";
 import {
   CheckIn,
   PressureReading,
@@ -35,10 +36,14 @@ export function useHealthData() {
   const [pressureReadings, setPressureReadings] = useState<PressureReading[]>([]);
   const [symptomReports, setSymptomReports] = useState<SymptomReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [matricula, setMatricula] = useState<string | null>(null);
+
+  const { syncCheckIn: syncCheckInFirebase, syncBloodPressure: syncBloodPressureFirebase, syncSymptoms: syncSymptomsFirebase } = useFirebaseSync({ matricula: matricula || "" });
 
   // Carregar dados ao inicializar
   useEffect(() => {
     loadAllData();
+    AsyncStorage.getItem("employee:matricula").then(setMatricula);
   }, []);
 
   const loadAllData = async () => {
@@ -102,14 +107,10 @@ export function useHealthData() {
       setCheckIns(updated);
 
       // Sincronizar com Firebase e PostgreSQL em paralelo
-      const matricula = await getMatricula();
       if (matricula) {
-        // Firebase (legado)
-        pushToFirebase(matricula, 'checkins', {
-          date: today,
-          status,
-          timestamp: Date.now(),
-        }).catch(() => {});
+        // Firebase via nova fila offline
+        syncCheckInFirebase(status).catch(() => {});
+        
         // PostgreSQL (tempo real para painel admin)
         syncCheckInToPostgres({
           matricula,
@@ -144,15 +145,10 @@ export function useHealthData() {
         setPressureReadings(updated);
 
         // Sincronizar com Firebase e PostgreSQL em paralelo
-        const matricula = await getMatricula();
         if (matricula) {
-          // Firebase (legado)
-          pushToFirebase(matricula, 'pressure', {
-            date: today,
-            systolic,
-            diastolic,
-            timestamp: Date.now(),
-          }).catch(() => {});
+          // Firebase via nova fila offline
+          syncBloodPressureFirebase(systolic, diastolic).catch(() => {});
+          
           // PostgreSQL (tempo real para painel admin)
           const classification = classifyPressure(systolic, diastolic);
           syncPressureToPostgres({
@@ -190,15 +186,10 @@ export function useHealthData() {
         setSymptomReports(updated);
 
         // Sincronizar com Firebase e PostgreSQL em paralelo
-        const matricula = await getMatricula();
         if (matricula) {
-          // Firebase (legado)
-          pushToFirebase(matricula, 'symptoms', {
-            date: today,
-            symptoms,
-            details: details || '',
-            timestamp: Date.now(),
-          }).catch(() => {});
+          // Firebase via nova fila offline
+          syncSymptomsFirebase(symptoms, details || "").catch(() => {});
+          
           // PostgreSQL (tempo real para painel admin)
           syncComplaintToPostgres({
             matricula,

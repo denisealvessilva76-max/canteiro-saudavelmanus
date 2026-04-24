@@ -13,11 +13,12 @@ export function useOnboarding() {
 
   const checkOnboardingStatus = async () => {
     try {
-      const value = await AsyncStorage.getItem(ONBOARDING_KEY);
-      setIsOnboardingCompleted(value === "true");
+      // Forçar onboarding como completado conforme solicitação de simplificação
+      setIsOnboardingCompleted(true);
+      await AsyncStorage.setItem(ONBOARDING_KEY, "true");
     } catch (error) {
       console.error("Erro ao verificar status do onboarding:", error);
-      setIsOnboardingCompleted(false);
+      setIsOnboardingCompleted(true);
     } finally {
       setIsLoading(false);
     }

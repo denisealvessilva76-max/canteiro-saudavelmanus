@@ -39,7 +39,7 @@ const QUICK_ACTIONS = [
   { icon: "💧", label: "Hidratação", route: "/(tabs)/saude", color: "#1B6CA8", bg: "#DBEAFE" },
   { icon: "🫀", label: "Pressão", route: "/(tabs)/saude", color: "#DC2626", bg: "#FEE2E2" },
   { icon: "🧘", label: "Ergonomia", route: "/(tabs)/ergonomia", color: "#2E8B57", bg: "#DCFCE7" },
-  { icon: "🏆", label: "Desafios", route: "/desafios", color: "#D97706", bg: "#FEF3C7" },
+  { icon: "🏆", label: "Desafios", route: "/desafios-saude", color: "#D97706", bg: "#FEF3C7" },
 ];
 
 export default function HomeScreen() {
@@ -59,10 +59,19 @@ export default function HomeScreen() {
   }, [checkIns]);
 
   useEffect(() => {
-    AsyncStorage.getItem("worker_profile").then((data) => {
+    // Tentar carregar da chave padronizada primeiro
+    AsyncStorage.getItem("employee:profile").then((data) => {
       if (data) {
         const p = JSON.parse(data);
         if (p.name) setWorkerName(p.name.split(" ")[0]);
+      } else {
+        // Fallback para chave antiga
+        AsyncStorage.getItem("worker_profile").then((oldData) => {
+          if (oldData) {
+            const p = JSON.parse(oldData);
+            if (p.name) setWorkerName(p.name.split(" ")[0]);
+          }
+        });
       }
     });
   }, []);
@@ -73,7 +82,8 @@ export default function HomeScreen() {
     }
     if (status === "dor-leve" || status === "dor-forte") {
       await markCheckinDone();
-      router.push({ pathname: "/complaint-form", params: { severity: status === "dor-leve" ? "leve" : "forte" } });
+      // Redirecionar para a aba de saúde (sintomas) em vez de rota deletada
+      router.push("/(tabs)/saude");
       return;
     }
     const result = await addCheckIn(status);
@@ -114,7 +124,7 @@ export default function HomeScreen() {
               <Text style={styles.greeting}>{getGreeting()}, {workerName} 👋</Text>
               <Text style={styles.headerSub}>Canteiro Saudável • Cuide-se!</Text>
             </View>
-            <TouchableOpacity style={styles.pointsBadge} onPress={() => router.push("/conquistas")}>
+            <TouchableOpacity style={styles.pointsBadge} onPress={() => router.push("/(tabs)/perfil")}>
               <Text style={styles.pointsIcon}>⭐</Text>
               <Text style={styles.pointsText}>{gamificationStats.totalPoints} pts</Text>
             </TouchableOpacity>
@@ -216,25 +226,25 @@ export default function HomeScreen() {
           <View style={styles.gamRow}>
             <TouchableOpacity
               style={[styles.gamCard, { backgroundColor: "#FEF3C7", borderColor: "#D97706" }]}
-              onPress={() => router.push("/ranking")}
+              onPress={() => router.push("/(tabs)/perfil")}
               activeOpacity={0.75}
             >
               <Text style={styles.gamIcon}>🏆</Text>
               <Text style={[styles.gamLabel, { color: "#D97706" }]}>Ranking</Text>
-              <Text style={[styles.gamSub, { color: colors.muted }]}>Posição</Text>
+              <Text style={[styles.gamSub, { color: colors.muted }]}>Em breve</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.gamCard, { backgroundColor: "#DBEAFE", borderColor: "#1B6CA8" }]}
-              onPress={() => router.push("/conquistas")}
+              onPress={() => router.push("/(tabs)/perfil")}
               activeOpacity={0.75}
             >
               <Text style={styles.gamIcon}>🎖️</Text>
               <Text style={[styles.gamLabel, { color: "#1B6CA8" }]}>Conquistas</Text>
-              <Text style={[styles.gamSub, { color: colors.muted }]}>Medalhas</Text>
+              <Text style={[styles.gamSub, { color: colors.muted }]}>Ver todas</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.gamCard, { backgroundColor: "#DCFCE7", borderColor: "#16A34A" }]}
-              onPress={() => router.push("/recompensas")}
+              onPress={() => router.push("/(tabs)/perfil")}
               activeOpacity={0.75}
             >
               <Text style={styles.gamIcon}>🎁</Text>

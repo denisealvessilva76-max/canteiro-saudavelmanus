@@ -38,8 +38,8 @@ export type DashboardStats = {
 
 const STORAGE_KEYS = {
   CHECK_INS: "health:check-ins",
-  HYDRATION: "hydration_data",
-  CHALLENGES: "user_challenges",
+  HYDRATION: "health:hydration",
+  CHALLENGES: "active_challenges",
 };
 
 export function usePersonalDashboard() {
@@ -230,7 +230,7 @@ export function usePersonalDashboard() {
         title: "Fazer Check-in Diário",
         description: "Você ainda não fez o check-in de hoje",
         icon: "📋",
-        action: "/health-check",
+        action: "/(tabs)/index",
         priority: "high",
         completed: false,
       });
@@ -241,7 +241,7 @@ export function usePersonalDashboard() {
         title: "Check-in Diário",
         description: "✅ Completado hoje",
         icon: "📋",
-        action: "/health-check",
+        action: "/(tabs)/index",
         priority: "high",
         completed: true,
       });
@@ -255,7 +255,7 @@ export function usePersonalDashboard() {
         title: "Registrar Hidratação",
         description: "Beba água regularmente durante o expediente",
         icon: "💧",
-        action: "/hydration-tracker",
+        action: "/(tabs)/saude",
         priority: "high",
         completed: false,
       });
@@ -266,7 +266,7 @@ export function usePersonalDashboard() {
         title: "Hidratação",
         description: "✅ Meta diária atingida",
         icon: "💧",
-        action: "/hydration-tracker",
+        action: "/(tabs)/saude",
         priority: "high",
         completed: true,
       });
@@ -292,7 +292,7 @@ export function usePersonalDashboard() {
         title: "Iniciar um Desafio",
         description: "Melhore sua saúde com desafios diários",
         icon: "🎯",
-        action: "/desafios",
+        action: "/desafios-saude",
         priority: "medium",
         completed: false,
       });
@@ -302,7 +302,7 @@ export function usePersonalDashboard() {
         title: "Desafios Ativos",
         description: `✅ ${context.activeChallenges} desafio(s) em andamento`,
         icon: "🎯",
-        action: "/desafios",
+        action: "/desafios-saude",
         priority: "medium",
         completed: true,
       });
@@ -314,7 +314,7 @@ export function usePersonalDashboard() {
       title: "Fazer Alongamento",
       description: "Pause 5 minutos para alongar o corpo",
       icon: "🧘",
-      action: "/videos-alongamento",
+      action: "/(tabs)/ergonomia",
       priority: "medium",
       completed: false,
     });

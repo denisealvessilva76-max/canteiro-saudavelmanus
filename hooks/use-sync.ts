@@ -2,11 +2,12 @@ import { useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/use-auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useOfflineSync } from "@/hooks/use-offline-sync";
 
 const SYNC_KEYS = {
   CHECK_INS: "health:check-ins",
-  HYDRATION: "hydration:data",
-  PRESSURE: "health:pressure-readings",
+  HYDRATION: "health:hydration",
+  PRESSURE: "health:blood-pressure",
   COMPLAINTS: "health:symptom-reports",
 };
 
@@ -16,6 +17,7 @@ const SYNC_KEYS = {
  */
 export function useSync() {
   const { user } = useAuth();
+  const { processQueue } = useOfflineSync();
   const syncCheckIn = trpc.sync.checkIns.useMutation();
   const syncHydration = trpc.sync.hydration.useMutation();
   const syncPressure = trpc.sync.bloodPressure.useMutation();
@@ -176,6 +178,7 @@ export function useSync() {
       syncHydrationData();
       syncPressureData();
       syncComplaints();
+      processQueue(); // Processar fila offline do Firebase
     }, 30000);
 
     return () => clearInterval(interval);

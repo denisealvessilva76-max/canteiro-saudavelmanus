@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveToFirebase } from "@/lib/firebase";
+import { useFirebaseSync } from "@/hooks/use-firebase-sync";
 
 type Turno = "diurno" | "noturno";
 
@@ -16,6 +17,8 @@ export default function LoginScreen() {
   const [turno, setTurno] = useState<Turno>("diurno");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
+  const { syncProfile } = useFirebaseSync({ matricula: matricula.trim() });
 
   const handleLogin = async () => {
     if (!matricula.trim() || !nome.trim()) {
@@ -59,16 +62,18 @@ export default function LoginScreen() {
       };
       await AsyncStorage.setItem("employee:profile", JSON.stringify(basicProfile));
 
-      // Sincronizar perfil com Firebase (inclui turno)
+      // Sincronizar perfil com Firebase via fila offline (inclui turno)
       try {
-        await saveToFirebase(matricula.trim(), "profile", {
+        await syncProfile({
           name: nome.trim(),
           matricula: matricula.trim(),
           turno,
+          position: existingProfile?.position || "",
+          cpf: existingProfile?.cpf || "",
           updatedAt: new Date().toISOString(),
         });
       } catch (e) {
-        console.warn("[LOGIN] Firebase sync failed:", e);
+        console.warn("[LOGIN] Firebase sync queuing failed:", e);
       }
 
       // Sincronizar cadastro com banco PostgreSQL (imediato)

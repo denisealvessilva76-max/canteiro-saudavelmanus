@@ -4,6 +4,7 @@ import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Platform, View, StyleSheet } from "react-native";
 import { useColors } from "@/hooks/use-colors";
+import { ProtectedRoute } from "@/components/protected-route";
 
 export default function TabLayout() {
   const colors = useColors();
@@ -12,6 +13,7 @@ export default function TabLayout() {
   const tabBarHeight = 60 + bottomPadding;
 
   return (
+    <ProtectedRoute>
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.tint,
@@ -94,6 +96,7 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    </ProtectedRoute>
   );
 }
 

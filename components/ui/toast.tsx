@@ -69,7 +69,7 @@ export function Toast({ message, type = "success", visible, onHide, duration = 3
     <Animated.View
       style={{
         opacity,
-        position: "fixed",
+        position: "absolute" as const,
         top: 80,
         left: 16,
         right: 16,

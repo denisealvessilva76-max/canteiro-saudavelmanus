@@ -59,7 +59,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      // Limpar sessão e chaves padronizadas
       await AsyncStorage.removeItem("user_session");
+      await AsyncStorage.removeItem("employee:profile");
+      await AsyncStorage.removeItem("employee:matricula");
+      await AsyncStorage.removeItem("employee:name");
+      await AsyncStorage.removeItem("registration:completed");
       setUser(null);
     } catch (error) {
       console.error("[Auth] Erro ao fazer logout:", error);

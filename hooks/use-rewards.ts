@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Reward, Redemption, RewardCategory, RedemptionStatus, UserRewardsStats } from "@/lib/rewards-types";
+import { useOfflineSync } from "@/hooks/use-offline-sync";
 
 const REWARDS_STORAGE_KEY = "user_rewards";
 const REDEMPTIONS_STORAGE_KEY = "user_redemptions";
@@ -137,6 +138,12 @@ export function useRewards(availablePoints: number) {
     availablePoints,
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [matricula, setMatricula] = useState<string | null>(null);
+  const { syncSave } = useOfflineSync();
+
+  useEffect(() => {
+    AsyncStorage.getItem("employee:matricula").then(setMatricula);
+  }, []);
 
   useEffect(() => {
     loadRewards();
@@ -229,8 +236,8 @@ export function useRewards(availablePoints: number) {
     // Criar novo resgate
     const newRedemption: Redemption = {
       id: `redemption-${Date.now()}`,
-      userId: "user-1", // TODO: pegar do contexto de autenticação
-      userName: "Trabalhador", // TODO: pegar do perfil
+      userId: matricula || "unknown",
+      userName: "Trabalhador", // TODO: pegar do perfil se disponível
       rewardId: reward.id,
       rewardTitle: reward.title,
       pointsCost: reward.pointsCost,
@@ -250,8 +257,13 @@ export function useRewards(availablePoints: number) {
       setRewards(updatedRewards);
     }
 
-    // TODO: Notificar SESMT sobre novo resgate
-    // await notifyAdminNewRedemption(newRedemption);
+    // Sincronizar com Firebase via fila offline
+    if (matricula) {
+      syncSave(matricula, `redemptions/${newRedemption.id}`, {
+        ...newRedemption,
+        updatedAt: Date.now()
+      }).catch(() => {});
+    }
 
     return {
       success: true,

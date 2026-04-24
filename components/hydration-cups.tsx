@@ -4,6 +4,7 @@ import { useColors } from "@/hooks/use-colors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
+import { useFirebaseSync } from "@/hooks/use-firebase-sync";
 
 interface Cup {
   id: number;
@@ -27,11 +28,20 @@ export function HydrationCups({ onUpdate }: HydrationCupsProps) {
   const [totalMl, setTotalMl] = useState(0);
   const [dailyGoal, setDailyGoal] = useState(2000);
   const [history, setHistory] = useState<Array<{ ml: number; time: string }>>([]);
+  const [matricula, setMatricula] = useState<string | null>(null);
+
+  const { syncWaterIntake } = useFirebaseSync({ matricula: matricula || "" });
 
   useEffect(() => {
     loadHydrationData();
     calculateDailyGoal();
+    loadMatricula();
   }, []);
+
+  const loadMatricula = async () => {
+    const m = await AsyncStorage.getItem("employee:matricula");
+    setMatricula(m);
+  };
 
   const loadHydrationData = async () => {
     try {
@@ -89,14 +99,14 @@ export function HydrationCups({ onUpdate }: HydrationCupsProps) {
         JSON.stringify({ total: newTotal, history: newHistory, date: today })
       );
 
-      // Sincronizar com Firebase
-      const matricula = await AsyncStorage.getItem("employee:matricula");
+      // Sincronizar com Firebase via fila offline
       if (matricula) {
-        const firebaseKey = `hydration:${today}`;
-        await AsyncStorage.setItem(
-          `firebase:pending:${firebaseKey}`,
-          JSON.stringify({ total: newTotal, history: newHistory })
-        );
+        await syncWaterIntake({
+          waterIntake: newTotal,
+          glassesConsumed: newHistory.length,
+          goal: dailyGoal,
+          date: today
+        });
       }
     } catch (error) {
       console.error("Erro ao salvar hidratação:", error);

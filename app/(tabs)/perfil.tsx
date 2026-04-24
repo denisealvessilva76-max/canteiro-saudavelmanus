@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScreenContainer } from "@/components/screen-container";
+import { useAuth } from "@/hooks/use-auth";
 import { Card } from "@/components/ui/card";
 import { useEmployeeProfile } from "@/hooks/use-employee-profile";
-import { useOnboarding } from "@/hooks/use-onboarding";
+// import { useOnboarding } from "@/hooks/use-onboarding";
 import { Toast } from "@/components/ui/toast";
 import * as Haptics from "expo-haptics";
 
@@ -21,8 +22,9 @@ interface FormData {
 
 export default function PerfilScreen() {
   const router = useRouter();
+  const { logout: authLogout } = useAuth();
   const { profile, loading, saveProfile: saveProfileAPI } = useEmployeeProfile();
-  const { resetOnboarding } = useOnboarding();
+  // const { resetOnboarding } = useOnboarding();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [avatar, setAvatar] = useState<string>("👷");
@@ -76,12 +78,26 @@ export default function PerfilScreen() {
 
     setIsSaving(true);
     try {
+      // Salvar no PostgreSQL via API
       await saveProfileAPI({
         cpf: formData.cpf,
         name: formData.name,
         matricula: formData.matricula,
         position: formData.position,
       });
+
+      // Atualizar chave padronizada localmente
+      const existingProfileRaw = await AsyncStorage.getItem("employee:profile");
+      const existingProfile = existingProfileRaw ? JSON.parse(existingProfileRaw) : {};
+      const updatedProfile = {
+        ...existingProfile,
+        ...formData,
+        updatedAt: new Date().toISOString(),
+      };
+      await AsyncStorage.setItem("employee:profile", JSON.stringify(updatedProfile));
+      await AsyncStorage.setItem("employee:matricula", formData.matricula);
+      await AsyncStorage.setItem("employee:name", formData.name);
+
       setIsEditing(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setToastMessage("Perfil salvo com sucesso!");
@@ -120,6 +136,41 @@ export default function PerfilScreen() {
     } catch (error) {
       Alert.alert("Erro", "Não foi possível fazer a chamada");
     }
+  };
+
+  const handleLogout = async () => {
+    Alert.alert(
+      "Sair",
+      "Deseja realmente sair do aplicativo?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Sair",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await authLogout();
+              // Limpeza adicional de chaves padronizadas
+              const keys = [
+                "employee:profile",
+                "employee:matricula",
+                "employee:name",
+                "worker_profile",
+                "worker_matricula",
+                "health:check-ins",
+                "hydration:data",
+                "health:pressure-readings",
+                "health:symptom-reports"
+              ];
+              await AsyncStorage.multiRemove(keys);
+              router.replace("/login");
+            } catch (error) {
+              console.error("Erro ao sair:", error);
+            }
+          }
+        }
+      ]
+    );
   };
 
   if (loading) {
@@ -403,7 +454,8 @@ export default function PerfilScreen() {
               className="bg-purple-500 rounded-lg py-3 active:opacity-80"
               onPress={async () => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                await resetOnboarding();
+                // Remover flag de onboarding completo
+                await AsyncStorage.removeItem("onboarding:completed");
                 router.replace("/onboarding");
               }}
             >
@@ -491,6 +543,14 @@ export default function PerfilScreen() {
               </View>
             </View>
           </Card>
+
+          {/* Botão Sair */}
+          <TouchableOpacity
+            className="bg-error/10 border border-error rounded-xl py-4 items-center mb-4"
+            onPress={handleLogout}
+          >
+            <Text className="text-error font-bold text-base">🚪 Sair do Aplicativo</Text>
+          </TouchableOpacity>
 
           {/* Dica */}
           <Card className="bg-primary/10 border border-primary gap-2">

@@ -70,6 +70,7 @@ export function usePushNotifications() {
   const saveTokenLocally = async (token: string) => {
     try {
       await AsyncStorage.setItem("expo_push_token", token);
+      console.log("[PushNotifications] Token salvo localmente:", token);
     } catch (error) {
       console.error("Erro ao salvar push token:", error);
     }

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { saveToFirebase } from "@/lib/firebase";
 import { syncChallengeToPostgres } from "@/lib/sync-api";
+import { useOfflineSync } from "@/hooks/use-offline-sync";
 import {
   Challenge,
   ChallengeProgress,
@@ -19,6 +20,7 @@ export function useChallenges() {
   const [activeChallenges, setActiveChallenges] = useState<Challenge[]>([]);
   const [progressList, setProgressList] = useState<ChallengeProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { syncSave } = useOfflineSync();
 
   // Carregar dados ao iniciar
   useEffect(() => {
@@ -54,7 +56,13 @@ export function useChallenges() {
 
   // Obter nome do trabalhador
   const getWorkerName = async (): Promise<string> => {
-    const profileData = await AsyncStorage.getItem("worker_profile");
+    // Tentar carregar da chave padronizada primeiro
+    let profileData = await AsyncStorage.getItem("employee:profile");
+    if (!profileData) {
+      // Fallback para chave antiga
+      profileData = await AsyncStorage.getItem("worker_profile");
+    }
+    
     if (profileData) {
       const profile = JSON.parse(profileData);
       return profile.name || "Trabalhador";
@@ -103,22 +111,17 @@ export function useChallenges() {
       setProgressList(updatedProgress);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedProgress));
 
-      // Sincronizar com Firebase
-      try {
-        await saveToFirebase(workerId, `challenges/${challengeId}`, {
-          challengeId,
-          title: challenge.title,
-          status: 'active',
-          progress: 0,
-          goal: challenge.goal,
-          startDate,
-          endDate,
-          updatedAt: Date.now(),
-        });
-        console.log('[Challenges] Desafio iniciado sincronizado com Firebase:', challengeId);
-      } catch (e) {
-        console.error('[Challenges] Erro ao sincronizar desafio:', e);
-      }
+      // Sincronizar com Firebase via fila offline
+      syncSave(workerId, `challenges/${challengeId}`, {
+        challengeId,
+        title: challenge.title,
+        status: 'active',
+        progress: 0,
+        goal: challenge.goal,
+        startDate,
+        endDate,
+        updatedAt: Date.now(),
+      }).catch(() => {});
 
       // Sincronizar com PostgreSQL
       syncChallengeToPostgres({
@@ -179,20 +182,16 @@ export function useChallenges() {
       setProgressList(updatedList);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
 
-      // Sincronizar com Firebase
-      try {
-        await saveToFirebase(workerId, `challenges/${challengeId}`, {
-          challengeId,
-          progress: Math.min(100, (newValue / challenge.goal) * 100),
-          currentValue: newValue,
-          goalValue: challenge.goal,
-          completed,
-          completedDate: completed ? new Date().toISOString() : null,
-          updatedAt: Date.now(),
-        });
-      } catch (e) {
-        console.error('[Challenges] Erro ao sincronizar progresso:', e);
-      }
+      // Sincronizar com Firebase via fila offline
+      syncSave(workerId, `challenges/${challengeId}`, {
+        challengeId,
+        progress: Math.min(100, (newValue / challenge.goal) * 100),
+        currentValue: newValue,
+        goalValue: challenge.goal,
+        completed,
+        completedDate: completed ? new Date().toISOString() : null,
+        updatedAt: Date.now(),
+      }).catch(() => {});
 
       // Sincronizar com PostgreSQL
       const challenge2 = AVAILABLE_CHALLENGES.find((c) => c.id === challengeId);

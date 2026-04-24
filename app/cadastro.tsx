@@ -95,7 +95,7 @@ export default function CadastroScreen() {
       console.log("[Cadastro] Resposta da API:", result);
 
       if (result.success) {
-        // Salvar dados adicionais no AsyncStorage
+        // Salvar dados adicionais no AsyncStorage de forma individual para compatibilidade
         await AsyncStorage.setItem("employee:matricula", matricula);
         await AsyncStorage.setItem("employee:name", nome);
         await AsyncStorage.setItem("employee:turno", turno);
@@ -104,6 +104,20 @@ export default function CadastroScreen() {
         await AsyncStorage.setItem("employee:tipoTrabalho", tipoTrabalho);
         await AsyncStorage.setItem("employee:funcao", funcao);
         await AsyncStorage.setItem("registration:completed", "true");
+
+        // SALVAR PERFIL COMPLETO NA CHAVE PADRONIZADA "employee:profile"
+        const fullProfile = {
+          matricula,
+          name: nome,
+          position: funcao,
+          cpf: "",
+          turno: turno as "diurno" | "noturno",
+          height: alturaNum,
+          weight: pesoNum,
+          workType: tipoTrabalho as "leve" | "moderado" | "pesado",
+          updatedAt: new Date().toISOString(),
+        };
+        await AsyncStorage.setItem("employee:profile", JSON.stringify(fullProfile));
 
         Alert.alert(
           "Sucesso!",

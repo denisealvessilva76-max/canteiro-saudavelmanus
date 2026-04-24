@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from "expo-haptics";
 import { useFirebaseSync } from "@/hooks/use-firebase-sync";
+import { useOfflineSync } from "@/hooks/use-offline-sync";
 
 interface ChallengePhoto {
   id: string;
@@ -34,7 +35,7 @@ export function ChallengePhotos({ challengeId, challengeName, onPhotoAdded }: Ch
   const [description, setDescription] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [matricula, setMatricula] = useState("");
-  const { syncProfile } = useFirebaseSync({ matricula, enabled: !!matricula });
+  const { syncSave } = useOfflineSync();
 
   useEffect(() => {
     loadPhotos();
@@ -120,8 +121,13 @@ export function ChallengePhotos({ challengeId, challengeName, onPhotoAdded }: Ch
       const key = `challenge:${challengeId}:photos`;
       await AsyncStorage.setItem(key, JSON.stringify(updatedPhotos));
 
-      // Sincronizar com Firebase (será feito automaticamente pelo hook)
-      // Dados salvos em AsyncStorage serão sincronizados quando houver conexão
+      // Sincronizar metadados com Firebase via fila offline
+      if (matricula) {
+        syncSave(matricula, `challenges/${challengeId}/photos/${newPhoto.id}`, {
+          ...newPhoto,
+          updatedAt: Date.now()
+        }).catch(() => {});
+      }
     } catch (error) {
       console.error("Erro ao salvar foto:", error);
     }

@@ -105,38 +105,34 @@ export function useFirebaseAdmin() {
               checkInsToday++;
             }
             
-            // Hidratação de hoje
-            const water = empData.water || {};
-            const todayWater = Object.values(water).filter(
-              (w: any) => w.date === today
-            );
-            const hydrationToday = todayWater.reduce(
-              (sum: number, w: any) => sum + (w.amount || 0),
-              0
-            );
+            // Hidratação de hoje (Nova estrutura: hydration/{date}/waterIntake)
+            const hydrationToday = empData.hydration && empData.hydration[today] 
+              ? (empData.hydration[today].waterIntake || 0) : 0;
+            const hydrationGoal = empData.hydration && empData.hydration[today]
+              ? (empData.hydration[today].goal || 2000) : 2000;
             
             if (hydrationToday > 0) {
               totalHydration += hydrationToday;
               hydrationCount++;
             }
             
-            // Pressão arterial mais recente
-            const bloodPressure = empData.bloodPressure || {};
-            const bpRecords = Object.values(bloodPressure).sort(
+            // Pressão arterial mais recente (Nova estrutura: pressure/{timestamp})
+            const pressure = empData.pressure || {};
+            const bpRecords = Object.values(pressure).sort(
               (a: any, b: any) => b.timestamp - a.timestamp
             );
             const lastPressure = bpRecords.length > 0
               ? {
                   systolic: (bpRecords[0] as any).systolic,
                   diastolic: (bpRecords[0] as any).diastolic,
-                  date: (bpRecords[0] as any).date,
+                  date: (bpRecords[0] as any).date || new Date((bpRecords[0] as any).timestamp).toISOString().split('T')[0],
                 }
               : null;
             
-            // Queixas da semana
-            const symptoms = empData.symptoms || {};
-            const weekSymptoms = Object.values(symptoms).filter(
-              (s: any) => s.date >= weekAgo
+            // Queixas da semana (Nova estrutura: complaints/{timestamp})
+            const complaints = empData.complaints || {};
+            const weekSymptoms = Object.values(complaints).filter(
+              (s: any) => (s.date || new Date(s.timestamp).toISOString().split('T')[0]) >= weekAgo
             );
             complaintsThisWeek += weekSymptoms.length;
             
@@ -151,10 +147,10 @@ export function useFirebaseAdmin() {
               turno: profile.turno,
               lastCheckIn: todayCheckins.length > 0 ? today : null,
               hydrationToday,
-              hydrationGoal: 2000, // Meta padrão
+              hydrationGoal,
               lastPressure,
               complaintsCount: weekSymptoms.length,
-              challengesActive: 0,
+              challengesActive: empData.challenges ? Object.keys(empData.challenges).length : 0,
             });
           });
 

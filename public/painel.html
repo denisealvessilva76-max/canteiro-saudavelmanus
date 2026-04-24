@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canteiro Saudável - Painel Admin</title>
-    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -16,7 +17,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #F0FDF4;
             min-height: 100vh;
             padding: 20px;
         }
@@ -38,7 +39,7 @@
         }
 
         header h1 {
-            color: #0a7ea4;
+            color: #16A34A;
             font-size: 28px;
         }
 
@@ -57,7 +58,7 @@
 
         .auth-section button {
             padding: 8px 16px;
-            background: #0a7ea4;
+            background: #16A34A;
             color: white;
             border: none;
             border-radius: 5px;
@@ -66,7 +67,7 @@
         }
 
         .auth-section button:hover {
-            background: #0a6fa4;
+            background: #15803d;
         }
 
         .tabs {
@@ -91,9 +92,9 @@
         }
 
         .tab-button.active {
-            background: #0a7ea4;
+            background: #16A34A;
             color: white;
-            border-color: #0a7ea4;
+            border-color: #16A34A;
         }
 
         .tab-button:hover {
@@ -101,7 +102,7 @@
         }
 
         .tab-button.active:hover {
-            background: #0a6fa4;
+            background: #15803d;
         }
 
         .tab-content {
@@ -124,7 +125,7 @@
 
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #0a7ea4;
+            border-top: 4px solid #16A34A;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -144,15 +145,17 @@
         }
 
         .card {
-            background: #f9f9f9;
+            background: #FFFFFF;
             padding: 15px;
             border-radius: 8px;
-            border-left: 4px solid #0a7ea4;
+            border-left: 4px solid #16A34A;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #D1FAE5;
+            border-left-width: 4px;
         }
 
         .card h3 {
-            color: #0a7ea4;
+            color: #16A34A;
             margin-bottom: 10px;
             font-size: 16px;
         }
@@ -219,7 +222,7 @@
 
         .refresh-btn {
             padding: 10px 20px;
-            background: #0a7ea4;
+            background: #16A34A;
             color: white;
             border: none;
             border-radius: 5px;
@@ -229,7 +232,7 @@
         }
 
         .refresh-btn:hover {
-            background: #0a6fa4;
+            background: #15803d;
         }
 
         .stats {
@@ -240,7 +243,7 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
             color: white;
             padding: 20px;
             border-radius: 8px;
@@ -284,6 +287,7 @@
             <button class="tab-button" onclick="switchTab('health')">❤️ Saúde</button>
             <button class="tab-button" onclick="switchTab('hydration')">💧 Hidratação</button>
             <button class="tab-button" onclick="switchTab('challenges')">🏆 Desafios</button>
+            <button class="tab-button" onclick="generateReport()" style="margin-left: auto; background: #16A34A; color: white;">📄 Gerar Relatório PDF</button>
         </div>
 
         <!-- Dashboard -->
@@ -319,10 +323,11 @@
     </div>
 
     <script>
-        // Firebase Config
+        // Firebase Config (v8 Compat)
         const firebaseConfig = {
             apiKey: "AIzaSyB32S5Eac0guxy1herefub70AIAGkgF1Rw",
             authDomain: "canteiro-saudavel.firebaseapp.com",
+            databaseURL: "https://canteiro-saudavel-default-rtdb.firebaseio.com",
             projectId: "canteiro-saudavel",
             storageBucket: "canteiro-saudavel.firebasestorage.app",
             messagingSenderId: "37768857073",
@@ -331,7 +336,7 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const db = firebase.database(); // Usando Realtime Database conforme solicitado
         const storage = firebase.storage();
 
         let isLoggedIn = false;
@@ -340,7 +345,16 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            if (email === 'admin@canteiro.com' && password === 'admin123') {
+            // Credenciais solicitadas: denisealvessilva76@gmail.com / POTATO345
+            const validAdmins = [
+                { email: 'denisealvessilva76@gmail.com', pass: 'POTATO345' },
+                { email: 'denise.silva@mip.com.br', pass: 'POTATO345' },
+                { email: 'admin@canteiro.com', pass: 'admin123' }
+            ];
+
+            const admin = validAdmins.find(a => a.email === email && a.pass === password);
+
+            if (admin) {
                 isLoggedIn = true;
                 localStorage.setItem('adminLoggedIn', 'true');
                 alert('Login realizado com sucesso!');
@@ -386,25 +400,27 @@
             const content = document.getElementById('dashboard-content');
             content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
 
-            db.collection('employees').get().then((snapshot) => {
-                const employees = snapshot.size;
-                let totalHealth = 0;
+            db.ref('canteiro-saudavel/employees').once('value').then((snapshot) => {
+                const data = snapshot.val() || {};
+                const matriculas = Object.keys(data);
+                const employeesCount = matriculas.length;
+                let totalCheckins = 0;
                 let totalHydration = 0;
 
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.health) totalHealth++;
-                    if (data.hydration) totalHydration++;
+                matriculas.forEach((m) => {
+                    const emp = data[m];
+                    if (emp.checkins) totalCheckins += Object.keys(emp.checkins).length;
+                    if (emp.hydration) totalHydration += Object.keys(emp.hydration).length;
                 });
 
                 const statsHtml = `
                     <div class="stat-card">
                         <h4>Total de Funcionários</h4>
-                        <div class="number">${employees}</div>
+                        <div class="number">${employeesCount}</div>
                     </div>
                     <div class="stat-card">
-                        <h4>Registros de Saúde</h4>
-                        <div class="number">${totalHealth}</div>
+                        <h4>Check-ins Realizados</h4>
+                        <div class="number">${totalCheckins}</div>
                     </div>
                     <div class="stat-card">
                         <h4>Registros de Hidratação</h4>
@@ -413,7 +429,7 @@
                 `;
 
                 document.getElementById('stats').innerHTML = statsHtml;
-                content.innerHTML = '<div class="card"><h3>Dashboard</h3><p>Dados carregados com sucesso! Total de funcionários: ' + employees + '</p></div>';
+                content.innerHTML = '<div class="card"><h3>Dashboard</h3><p>Dados em tempo real carregados com sucesso!</p></div>';
             }).catch(error => {
                 content.innerHTML = `<div class="card error">Erro ao carregar dashboard: ${error.message}</div>`;
             });
@@ -428,25 +444,30 @@
             const content = document.getElementById('employees-content');
             content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
 
-            db.collection('employees').get().then((snapshot) => {
-                if (snapshot.empty) {
+            db.ref('canteiro-saudavel/employees').once('value').then((snapshot) => {
+                const data = snapshot.val() || {};
+                const matriculas = Object.keys(data);
+                
+                if (matriculas.length === 0) {
                     content.innerHTML = '<div class="empty">Nenhum funcionário cadastrado</div>';
                     return;
                 }
 
                 let html = '<table class="table"><thead><tr><th>Matrícula</th><th>Nome</th><th>Turno</th><th>Função</th><th>Status</th></tr></thead><tbody>';
 
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const status = data.lastLogin ? 'Online' : 'Offline';
-                    const statusClass = data.lastLogin ? 'status-online' : 'status-offline';
+                matriculas.forEach((m) => {
+                    const emp = data[m].profile || {};
+                    const lastSync = data[m].lastSync || 0;
+                    const isOnline = (Date.now() - lastSync) < 300000; // 5 min
+                    const status = isOnline ? 'Online' : 'Offline';
+                    const statusClass = isOnline ? 'status-online' : 'status-offline';
 
                     html += `
                         <tr>
-                            <td>${data.matricula || 'N/A'}</td>
-                            <td>${data.name || 'N/A'}</td>
-                            <td>${data.shift || 'N/A'}</td>
-                            <td>${data.role || 'N/A'}</td>
+                            <td>${emp.matricula || m}</td>
+                            <td>${emp.name || 'N/A'}</td>
+                            <td>${emp.turno || 'N/A'}</td>
+                            <td>${emp.cargo || 'N/A'}</td>
                             <td><span class="status-badge ${statusClass}">${status}</span></td>
                         </tr>
                     `;
@@ -468,33 +489,34 @@
             const content = document.getElementById('health-content');
             content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
 
-            db.collection('employees').get().then((snapshot) => {
-                if (snapshot.empty) {
-                    content.innerHTML = '<div class="empty">Nenhum registro de saúde</div>';
-                    return;
-                }
-
+            db.ref('canteiro-saudavel/employees').once('value').then((snapshot) => {
+                const data = snapshot.val() || {};
+                const matriculas = Object.keys(data);
+                
                 let html = '<div class="grid">';
                 let hasHealth = false;
 
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.health) {
+                matriculas.forEach((m) => {
+                    const emp = data[m];
+                    if (emp.pressure || emp.complaints) {
                         hasHealth = true;
+                        const lastBP = emp.pressure ? Object.values(emp.pressure).sort((a,b) => b.timestamp - a.timestamp)[0] : null;
+                        const lastComplaint = emp.complaints ? Object.values(emp.complaints).sort((a,b) => b.timestamp - a.timestamp)[0] : null;
+                        
                         html += `
                             <div class="card">
-                                <h3>${data.name || data.matricula}</h3>
-                                <p><strong>Matrícula:</strong> ${data.matricula}</p>
-                                <p><strong>Pressão:</strong> ${data.health.bloodPressure || 'N/A'}</p>
-                                <p><strong>Sintomas:</strong> ${data.health.symptoms ? data.health.symptoms.join(', ') : 'Nenhum'}</p>
-                                <p><strong>Última atualização:</strong> ${data.health.lastUpdate || 'N/A'}</p>
+                                <h3>${emp.profile?.name || m}</h3>
+                                <p><strong>Matrícula:</strong> ${m}</p>
+                                <p><strong>Última Pressão:</strong> ${lastBP ? `${lastBP.systolic}/${lastBP.diastolic}` : 'N/A'}</p>
+                                <p><strong>Última Queixa:</strong> ${lastComplaint ? (lastComplaint.symptoms?.join(', ') || lastComplaint.details || 'N/A') : 'Nenhuma'}</p>
+                                <p><strong>Data:</strong> ${lastBP ? new Date(lastBP.timestamp).toLocaleString() : (lastComplaint ? new Date(lastComplaint.timestamp).toLocaleString() : 'N/A')}</p>
                             </div>
                         `;
                     }
                 });
 
                 html += '</div>';
-                content.innerHTML = hasHealth ? html : '<div class="empty">Nenhum registro de saúde</div>';
+                content.innerHTML = hasHealth ? html : '<div class="empty">Nenhum registro de saúde encontrado</div>';
             }).catch(error => {
                 content.innerHTML = `<div class="card error">Erro ao carregar saúde: ${error.message}</div>`;
             });
@@ -509,36 +531,40 @@
             const content = document.getElementById('hydration-content');
             content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
 
-            db.collection('employees').get().then((snapshot) => {
-                if (snapshot.empty) {
-                    content.innerHTML = '<div class="empty">Nenhum registro de hidratação</div>';
-                    return;
-                }
-
+            db.ref('canteiro-saudavel/employees').once('value').then((snapshot) => {
+                const data = snapshot.val() || {};
+                const matriculas = Object.keys(data);
+                
                 let html = '<div class="grid">';
                 let hasHydration = false;
+                const today = new Date().toISOString().split('T')[0];
 
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.hydration) {
+                matriculas.forEach((m) => {
+                    const emp = data[m];
+                    if (emp.hydration && emp.hydration[today]) {
                         hasHydration = true;
-                        const today = new Date().toISOString().split('T')[0];
-                        const todayHydration = data.hydration[today] || {};
+                        const h = emp.hydration[today];
+                        const goal = h.goal || 2800;
+                        const intake = h.waterIntake || 0;
+                        const progress = Math.min(100, Math.round((intake / goal) * 100));
 
                         html += `
                             <div class="card">
-                                <h3>${data.name || data.matricula}</h3>
-                                <p><strong>Matrícula:</strong> ${data.matricula}</p>
-                                <p><strong>Água hoje:</strong> ${(todayHydration.waterIntake || 0) / 1000}L</p>
-                                <p><strong>Meta:</strong> 2.8L</p>
-                                <p><strong>Progresso:</strong> ${Math.round(((todayHydration.waterIntake || 0) / 2800) * 100)}%</p>
+                                <h3>${emp.profile?.name || m}</h3>
+                                <p><strong>Matrícula:</strong> ${m}</p>
+                                <p><strong>Água hoje:</strong> ${(intake / 1000).toFixed(1)}L</p>
+                                <p><strong>Meta:</strong> ${(goal / 1000).toFixed(1)}L</p>
+                                <p><strong>Progresso:</strong> ${progress}%</p>
+                                <div style="width:100%; height:10px; background:#eee; border-radius:5px; margin-top:10px;">
+                                    <div style="width:${progress}%; height:10px; background:#16A34A; border-radius:5px;"></div>
+                                </div>
                             </div>
                         `;
                     }
                 });
 
                 html += '</div>';
-                content.innerHTML = hasHydration ? html : '<div class="empty">Nenhum registro de hidratação</div>';
+                content.innerHTML = hasHydration ? html : '<div class="empty">Nenhum registro de hidratação hoje</div>';
             }).catch(error => {
                 content.innerHTML = `<div class="card error">Erro ao carregar hidratação: ${error.message}</div>`;
             });
@@ -553,31 +579,188 @@
             const content = document.getElementById('challenges-content');
             content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
 
-            db.collection('challenges').get().then((snapshot) => {
-                if (snapshot.empty) {
-                    content.innerHTML = '<div class="empty">Nenhum desafio</div>';
-                    return;
-                }
-
+            db.ref('canteiro-saudavel/employees').once('value').then((snapshot) => {
+                const data = snapshot.val() || {};
+                const matriculas = Object.keys(data);
+                
                 let html = '<div class="grid">';
+                let hasChallenges = false;
 
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    html += `
-                        <div class="card">
-                            <h3>${data.name || 'Desafio'}</h3>
-                            <p><strong>Funcionário:</strong> ${data.employeeName || 'N/A'}</p>
-                            <p><strong>Status:</strong> ${data.status || 'Pendente'}</p>
-                            <p><strong>Data:</strong> ${data.date || 'N/A'}</p>
-                            ${data.photoUrl ? `<img src="${data.photoUrl}" alt="Foto" class="image-thumb">` : ''}
-                        </div>
-                    `;
+                matriculas.forEach((m) => {
+                    const emp = data[m];
+                    if (emp.challenges) {
+                        Object.keys(emp.challenges).forEach(cid => {
+                            hasChallenges = true;
+                            const chal = emp.challenges[cid];
+                            html += `
+                                <div class="card">
+                                    <h3>${chal.title || cid}</h3>
+                                    <p><strong>Funcionário:</strong> ${emp.profile?.name || m}</p>
+                                    <p><strong>Status:</strong> ${chal.status || 'Ativo'}</p>
+                                    <p><strong>Progresso:</strong> ${Math.round(chal.progress || 0)}%</p>
+                                    <p><strong>Última atualização:</strong> ${new Date(chal.updatedAt).toLocaleString()}</p>
+                                    ${chal.photos ? Object.values(chal.photos).map(p => `<img src="${p.uri}" class="image-thumb" title="${p.category}: ${p.description}">`).join('') : ''}
+                                </div>
+                            `;
+                        });
+                    }
                 });
 
                 html += '</div>';
-                content.innerHTML = html;
+                content.innerHTML = hasChallenges ? html : '<div class="empty">Nenhum desafio ativo encontrado</div>';
             }).catch(error => {
                 content.innerHTML = `<div class="card error">Erro ao carregar desafios: ${error.message}</div>`;
+            });
+        }
+
+        function generateReport() {
+            if (!isLoggedIn) {
+                alert('Faça login para gerar relatório');
+                return;
+            }
+
+            db.ref('canteiro-saudavel/employees').once('value').then((snapshot) => {
+                const data = snapshot.val() || {};
+                const matriculas = Object.keys(data);
+                
+                let totalEmployees = matriculas.length;
+                let totalCheckins = 0;
+                let totalHydration = 0;
+                let healthIssues = [];
+                let hydrationData = [];
+                
+                matriculas.forEach((m) => {
+                    const emp = data[m];
+                    if (emp.checkins) totalCheckins += Object.keys(emp.checkins).length;
+                    if (emp.hydration) {
+                        totalHydration += Object.keys(emp.hydration).length;
+                        Object.values(emp.hydration).forEach((h) => {
+                            hydrationData.push({
+                                employee: emp.profile?.name || m,
+                                intake: h.waterIntake || 0,
+                                goal: h.goal || 2800
+                            });
+                        });
+                    }
+                    if (emp.pressure) {
+                        Object.values(emp.pressure).forEach((p) => {
+                            if (p.systolic > 140 || p.diastolic > 90) {
+                                healthIssues.push({
+                                    employee: emp.profile?.name || m,
+                                    issue: `Pressão alta: ${p.systolic}/${p.diastolic}`,
+                                    date: new Date(p.timestamp).toLocaleDateString()
+                                });
+                            }
+                        });
+                    }
+                });
+                
+                // Gerar HTML para PDF
+                const htmlContent = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Relatório Canteiro Saudável</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; color: #333; }
+                            h1 { color: #16A34A; border-bottom: 3px solid #16A34A; padding-bottom: 10px; }
+                            h2 { color: #16A34A; margin-top: 20px; }
+                            .stat { display: inline-block; width: 23%; margin: 1%; padding: 15px; background: #f0fdf4; border-radius: 8px; text-align: center; }
+                            .stat-value { font-size: 24px; font-weight: bold; color: #16A34A; }
+                            .stat-label { font-size: 12px; color: #666; margin-top: 5px; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                            th { background: #16A34A; color: white; }
+                            tr:nth-child(even) { background: #f9f9f9; }
+                            .footer { margin-top: 30px; text-align: center; color: #999; font-size: 12px; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>🌱 Relatório de Saúde Ocupacional - Canteiro Saudável</h1>
+                        <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+                        
+                        <h2>Resumo Executivo</h2>
+                        <div class="stat">
+                            <div class="stat-value">${totalEmployees}</div>
+                            <div class="stat-label">Funcionários</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${totalCheckins}</div>
+                            <div class="stat-label">Check-ins</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${totalHydration}</div>
+                            <div class="stat-label">Registros de Hidratação</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${healthIssues.length}</div>
+                            <div class="stat-label">Alertas de Saúde</div>
+                        </div>
+                        
+                        ${healthIssues.length > 0 ? `
+                        <h2>Alertas de Saúde</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Funcionário</th>
+                                    <th>Problema</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${healthIssues.map(issue => `
+                                    <tr>
+                                        <td>${issue.employee}</td>
+                                        <td>${issue.issue}</td>
+                                        <td>${issue.date}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        ` : ''}
+                        
+                        ${hydrationData.length > 0 ? `
+                        <h2>Hidratação Diária</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Funcionário</th>
+                                    <th>Consumo (ml)</th>
+                                    <th>Meta (ml)</th>
+                                    <th>Progresso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${hydrationData.slice(0, 20).map(h => {
+                                    const progress = Math.round((h.intake / h.goal) * 100);
+                                    return `
+                                        <tr>
+                                            <td>${h.employee}</td>
+                                            <td>${(h.intake / 1000).toFixed(1)}L</td>
+                                            <td>${(h.goal / 1000).toFixed(1)}L</td>
+                                            <td>${progress}%</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                        ` : ''}
+                        
+                        <div class="footer">
+                            <p>Relatório gerado automaticamente pelo sistema Canteiro Saudável</p>
+                            <p>Para mais informações, entre em contato com o SESMT</p>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                const newWindow = window.open();
+                newWindow.document.write(htmlContent);
+                newWindow.document.close();
+                setTimeout(() => newWindow.print(), 250);
+            }).catch(error => {
+                alert('Erro ao gerar relatório: ' + error.message);
             });
         }
 

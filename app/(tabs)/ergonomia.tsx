@@ -33,6 +33,11 @@ export default function ErgonomiaScreen() {
     router.push(`/exercise-screen?exerciseId=${exerciseId}`);
   };
 
+  const navigateToErgonomiaCompleta = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push('/ergonomia-completa');
+  };
+
   return (
     <ScreenContainer className="p-4">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
@@ -42,6 +47,14 @@ export default function ErgonomiaScreen() {
             <Text className="text-3xl font-bold text-foreground">Ergonomia</Text>
             <Text className="text-base text-muted">Aprenda posturas corretas e alongamentos</Text>
           </View>
+
+          {/* Botão para Ergonomia Completa */}
+          <TouchableOpacity
+            onPress={navigateToErgonomiaCompleta}
+            className="bg-green-600 rounded-lg py-3 active:opacity-80"
+          >
+            <Text className="text-center font-semibold text-white">📚 Ver Guia Completo de Ergonomia</Text>
+          </TouchableOpacity>
 
           {/* Abas */}
           <View className="flex-row gap-2">

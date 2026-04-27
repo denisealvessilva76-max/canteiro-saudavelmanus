@@ -195,6 +195,13 @@ export default function SaudeScreen() {
   const [showSymptomDetails, setShowSymptomDetails] = useState(false);
   const [symptomDetails, setSymptomDetails] = useState("");
   const [symptomIntensity, setSymptomIntensity] = useState("leve");
+  const navigateToSaudeMental = () => {
+    router.push('/saude-mental');
+  };
+
+  const navigateToTriagem = () => {
+    router.push('/triagem-saude');
+  };
 
   return (
     <ScreenContainer className="p-4">
@@ -243,6 +250,22 @@ export default function SaudeScreen() {
               }`}>
                 🤒 Sintomas
               </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Links para Módulos Especiais */}
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              onPress={navigateToSaudeMental}
+              className="flex-1 bg-red-500 rounded-lg py-3 active:opacity-80"
+            >
+              <Text className="text-center font-semibold text-white">❤️ Saúde Mental</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={navigateToTriagem}
+              className="flex-1 bg-orange-500 rounded-lg py-3 active:opacity-80"
+            >
+              <Text className="text-center font-semibold text-white">📋 Triagem</Text>
             </TouchableOpacity>
           </View>
 

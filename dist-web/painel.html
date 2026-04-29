@@ -3,143 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canteiro Saudável - Painel SESMT</title>
+    <title>Canteiro Saudável - Painel Administrativo</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --primary: #1B8A4C;
-            --primary-light: #2DB86D;
-            --primary-dark: #145A38;
-            --background: #F0FDF4;
-            --surface: #FFFFFF;
-            --foreground: #0F172A;
-            --muted: #64748B;
-            --border: #D1FAE5;
-            --success: #16A34A;
-            --warning: #F59E0B;
-            --error: #DC2626;
+            --primary: #16a34a;
+            --primary-dark: #15803d;
+            --background: #f0fdf4;
+            --surface: #ffffff;
+            --foreground: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
         }
-        body { 
-            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: var(--background); 
-            color: var(--foreground); 
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--background); color: var(--foreground); }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header { 
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); 
-            color: white; 
-            padding: 30px; 
-            border-radius: 16px; 
-            margin-bottom: 30px; 
-            box-shadow: 0 4px 20px rgba(27, 138, 76, 0.25); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-        .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
-        .header p { opacity: 0.9; font-size: 14px; }
-        .tabs { 
-            display: flex; 
-            gap: 10px; 
-            margin-bottom: 20px; 
-            border-bottom: 2px solid var(--border); 
-            overflow-x: auto; 
-            background: white; 
-            padding: 10px; 
-            border-radius: 12px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .tab-btn { 
-            padding: 12px 20px; 
-            border: none; 
-            background: transparent; 
-            color: var(--muted); 
-            cursor: pointer; 
-            font-size: 14px; 
-            font-weight: 600; 
-            border-bottom: 3px solid transparent; 
-            transition: all 0.3s; 
-        }
+        .header { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; padding: 30px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(22, 163, 74, 0.25); display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 28px; margin-bottom: 8px; }
+        .header p { opacity: 0.9; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); overflow-x: auto; background: white; padding: 10px; border-radius: 12px; }
+        .tab-btn { padding: 12px 20px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 14px; font-weight: 600; border-bottom: 3px solid transparent; transition: all 0.3s; }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .card { 
-            background: white; 
-            border-radius: 12px; 
-            padding: 20px; 
-            margin-bottom: 20px; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
-            border: 1px solid var(--border); 
-        }
-        .stats-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-            gap: 15px; 
-            margin-bottom: 20px; 
-        }
-        .stat-box { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 12px; 
-            text-align: center; 
-            border-left: 4px solid var(--primary); 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
-        }
-        .stat-value { font-size: 32px; font-weight: 700; color: var(--primary); }
+        .card { background: var(--surface); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06); border: 1px solid var(--border); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: white; padding: 20px; border-radius: 12px; text-align: center; border-bottom: 4px solid var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .stat-value { font-size: 32px; font-weight: bold; color: var(--primary); }
         .stat-label { font-size: 13px; color: var(--muted); margin-top: 8px; font-weight: 600; }
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .chart-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid var(--border); }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #F8FAFC; padding: 12px; text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); border-bottom: 2px solid var(--border); }
+        th { background: #f8fafc; padding: 12px; text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); border-bottom: 2px solid var(--border); }
         td { padding: 12px; border-bottom: 1px solid var(--border); font-size: 14px; }
-        tr:hover { background: #F1F5F9; }
-        .btn { 
-            padding: 10px 20px; 
-            border: none; 
-            border-radius: 8px; 
-            font-size: 14px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.3s; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 8px; 
-        }
+        tr:hover { background: #f1f5f9; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-secondary { background: white; color: var(--foreground); border: 1px solid var(--border); }
-        .badge { 
-            padding: 4px 10px; 
-            border-radius: 20px; 
-            font-size: 11px; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-        }
-        .badge-success { background: #DCFCE7; color: #166534; }
-        .badge-warning { background: #FEF3C7; color: #92400E; }
-        .badge-error { background: #FEE2E2; color: #991B1B; }
-        .login-screen { 
-            min-height: 100vh; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            background: linear-gradient(135deg, #145A38 0%, #1B8A4C 100%); 
-        }
-        .login-card { 
-            background: white; 
-            padding: 40px; 
-            border-radius: 20px; 
-            width: 100%; 
-            max-width: 400px; 
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); 
-        }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-error { background: #fee2e2; color: #991b1b; }
+        .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #14532d 0%, #166534 100%); }
+        .login-card { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
         .form-group input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 14px; }
@@ -177,19 +90,18 @@
             </div>
             <div style="display: flex; gap: 10px;">
                 <button class="btn btn-secondary" onclick="generateReport()">📄 Exportar PDF</button>
-                <button class="btn btn-secondary" style="background: #FEE2E2; color: #991B1B;" onclick="handleLogout()">Sair</button>
+                <button class="btn btn-secondary" style="background: #fee2e2; color: #991b1b;" onclick="handleLogout()">Sair</button>
             </div>
         </div>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
             <button class="tab-btn" onclick="switchTab('employees')">👥 Funcionários</button>
-            <button class="tab-btn" onclick="switchTab('health')">❤️ Saúde</button>
-            <button class="tab-btn" onclick="switchTab('challenges')">🏆 Desafios</button>
-            <button class="tab-btn" onclick="switchTab('communications')">📢 Comunicados</button>
+            <button class="tab-btn" onclick="switchTab('health')">❤️ Saúde & Triagem</button>
+            <button class="tab-btn" onclick="switchTab('hydration')">💧 Hidratação</button>
+            <button class="tab-btn" onclick="switchTab('photos')">📷 Fotos Desafios</button>
         </div>
 
-        <!-- DASHBOARD -->
         <div id="dashboard" class="tab-content active">
             <div class="stats-grid">
                 <div class="stat-box">
@@ -198,39 +110,23 @@
                 </div>
                 <div class="stat-box">
                     <div class="stat-value" id="stat-checkins">0</div>
-                    <div class="stat-label">Check-ins Hoje</div>
+                    <div class="stat-label">Check-ins (Hoje)</div>
                 </div>
                 <div class="stat-box">
                     <div class="stat-value" id="stat-alerts">0</div>
                     <div class="stat-label">Alertas Críticos</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-value" id="stat-hydration">0%</div>
-                    <div class="stat-label">Meta Hidratação</div>
+                    <div class="stat-value" id="stat-hydration">0</div>
+                    <div class="stat-label">Média Hidratação</div>
                 </div>
             </div>
-
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <h3 style="margin-bottom: 15px; color: var(--primary);">📊 Hidratação (7 dias)</h3>
-                    <canvas id="hydrationChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <h3 style="margin-bottom: 15px; color: var(--primary);">❤️ Pressão Arterial</h3>
-                    <canvas id="pressureChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <h3 style="margin-bottom: 15px; color: var(--primary);">⚠️ Queixas por Tipo</h3>
-                    <canvas id="complaintsChart"></canvas>
-                </div>
-                <div class="chart-container">
-                    <h3 style="margin-bottom: 15px; color: var(--primary);">✅ Check-ins por Status</h3>
-                    <canvas id="checkinChart"></canvas>
-                </div>
+            <div class="card">
+                <h2>📈 Atividade Recente</h2>
+                <div id="recent-activity">Carregando atividade...</div>
             </div>
         </div>
 
-        <!-- FUNCIONÁRIOS -->
         <div id="employees" class="tab-content">
             <div class="card">
                 <h2>👥 Funcionários Cadastrados</h2>
@@ -238,7 +134,6 @@
             </div>
         </div>
 
-        <!-- SAÚDE -->
         <div id="health" class="tab-content">
             <div class="card">
                 <h2>❤️ Monitoramento de Saúde</h2>
@@ -246,20 +141,17 @@
             </div>
         </div>
 
-        <!-- DESAFIOS -->
-        <div id="challenges" class="tab-content">
+        <div id="hydration" class="tab-content">
             <div class="card">
-                <h2>🏆 Galeria de Desafios</h2>
-                <div id="photos-grid" class="photo-grid"></div>
+                <h2>💧 Controle de Hidratação Diária</h2>
+                <div id="hydration-table-container"></div>
             </div>
         </div>
 
-        <!-- COMUNICADOS -->
-        <div id="communications" class="tab-content">
+        <div id="photos" class="tab-content">
             <div class="card">
-                <h2>📢 Comunicados</h2>
-                <button class="btn btn-primary" onclick="showNewCommunicado()" style="margin-bottom: 20px;">+ Novo Comunicado</button>
-                <div id="comunicados-list"></div>
+                <h2>📷 Galeria de Desafios</h2>
+                <div id="photos-grid" class="photo-grid"></div>
             </div>
         </div>
     </div>
@@ -279,7 +171,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     let allData = {};
-    let charts = {};
 
     function handleLogin() {
         const email = document.getElementById('login-email').value;
@@ -289,7 +180,7 @@
             document.getElementById('admin-screen').classList.remove('hidden');
             startListeners();
         } else {
-            alert('Acesso negado. Verifique suas credenciais.');
+            alert('Acesso negado.');
         }
     }
 
@@ -322,7 +213,6 @@
         let alerts = 0;
         let totalWater = 0;
         let waterCount = 0;
-        let hydrationPercentage = 0;
 
         matriculas.forEach(m => {
             const emp = allData[m];
@@ -338,35 +228,32 @@
             if (emp.hydration && emp.hydration[today]) {
                 totalWater += (emp.hydration[today].waterIntake || 0);
                 waterCount++;
-                const goal = emp.hydration[today].goal || 2800;
-                hydrationPercentage += Math.min(100, (emp.hydration[today].waterIntake / goal) * 100);
             }
         });
 
         document.getElementById('stat-checkins').innerText = checkinsToday;
         document.getElementById('stat-alerts').innerText = alerts;
-        document.getElementById('stat-hydration').innerText = waterCount > 0 ? Math.round(hydrationPercentage / waterCount) + '%' : '0%';
+        document.getElementById('stat-hydration').innerText = waterCount > 0 ? (totalWater/waterCount/1000).toFixed(1) + 'L' : '0L';
 
         renderEmployees();
         renderHealth();
+        renderHydration();
         renderPhotos();
-        renderComunicados();
-        updateCharts();
+        renderActivity();
     }
 
     function renderEmployees() {
-        let html = '<table><thead><tr><th>Matrícula</th><th>Nome</th><th>Turno</th><th>Altura (cm)</th><th>Peso (kg)</th><th>Último Acesso</th></tr></thead><tbody>';
+        let html = '<table><thead><tr><th>Matrícula</th><th>Nome</th><th>Cargo</th><th>Turno</th><th>Último Sync</th></tr></thead><tbody>';
         Object.keys(allData).forEach(m => {
             const p = allData[m].profile || {};
-            const lastSync = allData[m].lastSync ? new Date(allData[m].lastSync).toLocaleString() : '---';
-            html += `<tr><td><strong>${m}</strong></td><td>${p.name || '---'}</td><td>${p.turno || '---'}</td><td>${p.altura || '---'}</td><td>${p.peso || '---'}</td><td>${lastSync}</td></tr>`;
+            html += `<tr><td>${m}</td><td>${p.name || '---'}</td><td>${p.cargo || '---'}</td><td>${p.turno || '---'}</td><td>${allData[m].lastSync ? new Date(allData[m].lastSync).toLocaleString() : '---'}</td></tr>`;
         });
         html += '</tbody></table>';
         document.getElementById('employees-table-container').innerHTML = html;
     }
 
     function renderHealth() {
-        let html = '<table><thead><tr><th>Funcionário</th><th>Pressão</th><th>Sintomas</th><th>IMC</th><th>Data</th></tr></thead><tbody>';
+        let html = '<table><thead><tr><th>Funcionário</th><th>Pressão</th><th>Sintomas</th><th>IMC</th><th>Status</th></tr></thead><tbody>';
         Object.keys(allData).forEach(m => {
             const emp = allData[m];
             const p = emp.profile || {};
@@ -375,18 +262,40 @@
             
             let bpStr = lastBP ? `${lastBP.systolic}/${lastBP.diastolic}` : '---';
             let bpClass = (lastBP && (lastBP.systolic >= 140 || lastBP.diastolic >= 90)) ? 'badge-error' : 'badge-success';
-            let imc = p.peso && p.altura ? (p.peso / ((p.altura/100)**2)).toFixed(1) : '---';
             
             html += `<tr>
                 <td><strong>${p.name || m}</strong></td>
                 <td><span class="badge ${bpClass}">${bpStr}</span></td>
-                <td>${lastComp && lastComp.symptoms ? lastComp.symptoms.join(', ') : 'Nenhum'}</td>
-                <td>${imc}</td>
+                <td>${lastComp ? lastComp.symptoms?.join(', ') : 'Nenhum'}</td>
+                <td>${p.peso && p.altura ? (p.peso / ((p.altura/100)**2)).toFixed(1) : '---'}</td>
                 <td>${lastBP ? new Date(lastBP.timestamp).toLocaleDateString() : '---'}</td>
             </tr>`;
         });
         html += '</tbody></table>';
         document.getElementById('health-table-container').innerHTML = html;
+    }
+
+    function renderHydration() {
+        const today = new Date().toISOString().split('T')[0];
+        let html = '<table><thead><tr><th>Funcionário</th><th>Consumo</th><th>Meta</th><th>Progresso</th></tr></thead><tbody>';
+        Object.keys(allData).forEach(m => {
+            const emp = allData[m];
+            const h = (emp.hydration && emp.hydration[today]) ? emp.hydration[today] : { waterIntake: 0, goal: 2800 };
+            const perc = Math.min(100, Math.round((h.waterIntake/h.goal)*100));
+            html += `<tr>
+                <td>${emp.profile?.name || m}</td>
+                <td>${(h.waterIntake/1000).toFixed(2)}L</td>
+                <td>${(h.goal/1000).toFixed(2)}L</td>
+                <td>
+                    <div style="width:100px; background:#eee; height:8px; border-radius:4px; overflow:hidden;">
+                        <div style="width:${perc}%; background:var(--primary); height:100%;"></div>
+                    </div>
+                    <span style="font-size:10px">${perc}%</span>
+                </td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        document.getElementById('hydration-table-container').innerHTML = html;
     }
 
     function renderPhotos() {
@@ -397,7 +306,7 @@
                 Object.values(emp.challenges).forEach(c => {
                     if (c.photoUrl) {
                         html += `<div class="photo-card">
-                            <img src="${c.photoUrl}" onclick="window.open(this.src)" style="cursor: pointer;">
+                            <img src="${c.photoUrl}" onclick="window.open(this.src)">
                             <div class="photo-info">
                                 <strong>${emp.profile?.name || m}</strong><br>
                                 <small>${c.name || 'Desafio'}</small><br>
@@ -408,191 +317,34 @@
                 });
             }
         });
-        document.getElementById('photos-grid').innerHTML = html || '<p style="padding:20px; color:var(--muted); grid-column: 1/-1;">Nenhuma foto enviada.</p>';
+        document.getElementById('photos-grid').innerHTML = html || '<p style="padding:20px; color:var(--muted)">Nenhuma foto enviada.</p>';
     }
 
-    function renderComunicados() {
-        db.ref('canteiro-saudavel/comunicados').on('value', (snapshot) => {
-            const data = snapshot.val() || {};
-            let html = '';
-            Object.values(data).forEach(com => {
-                html += `<div class="card">
-                    <h3>${com.title || 'Sem título'}</h3>
-                    <p>${com.message || ''}</p>
-                    <small style="color: var(--muted);">${new Date(com.createdAt || 0).toLocaleString('pt-BR')}</small>
-                </div>`;
-            });
-            document.getElementById('comunicados-list').innerHTML = html || '<p style="color:var(--muted);">Nenhum comunicado publicado.</p>';
+    function renderActivity() {
+        const activities = [];
+        Object.keys(allData).forEach(m => {
+            const emp = allData[m];
+            const name = emp.profile?.name || m;
+            if (emp.checkins) Object.values(emp.checkins).forEach(c => activities.push({ name, type: 'Check-in: ' + c.status, time: c.timestamp }));
+            if (emp.pressure) Object.values(emp.pressure).forEach(p => activities.push({ name, type: 'Pressão: ' + p.systolic + '/' + p.diastolic, time: p.timestamp }));
         });
-    }
-
-    function updateCharts() {
-        // Gráfico de Hidratação (7 dias)
-        const hydrationData = getLast7DaysHydration();
-        updateChart('hydrationChart', {
-            type: 'line',
-            data: {
-                labels: hydrationData.labels,
-                datasets: [{
-                    label: 'Consumo (L)',
-                    data: hydrationData.values,
-                    borderColor: '#1B8A4C',
-                    backgroundColor: 'rgba(27, 138, 76, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            }
-        });
-
-        // Gráfico de Pressão
-        const pressureData = getLatestPressures();
-        updateChart('pressureChart', {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'Pressão Sistólica',
-                    data: pressureData.systolic,
-                    borderColor: '#DC2626',
-                    backgroundColor: 'rgba(220, 38, 38, 0.1)'
-                }, {
-                    label: 'Pressão Diastólica',
-                    data: pressureData.diastolic,
-                    borderColor: '#F59E0B',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)'
-                }]
-            }
-        });
-
-        // Gráfico de Queixas
-        const complaintsData = getComplaintsByType();
-        updateChart('complaintsChart', {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(complaintsData),
-                datasets: [{
-                    data: Object.values(complaintsData),
-                    backgroundColor: ['#DC2626', '#F59E0B', '#1B8A4C', '#0EA5E9']
-                }]
-            }
-        });
-
-        // Gráfico de Check-ins
-        const checkinData = getCheckinsByStatus();
-        updateChart('checkinChart', {
-            type: 'bar',
-            data: {
-                labels: Object.keys(checkinData),
-                datasets: [{
-                    label: 'Quantidade',
-                    data: Object.values(checkinData),
-                    backgroundColor: ['#16A34A', '#F59E0B', '#DC2626']
-                }]
-            }
-        });
-    }
-
-    function updateChart(canvasId, config) {
-        const ctx = document.getElementById(canvasId);
-        if (!ctx) return;
+        activities.sort((a,b) => b.time - a.time);
         
-        if (charts[canvasId]) {
-            charts[canvasId].destroy();
-        }
-        
-        charts[canvasId] = new Chart(ctx, {
-            ...config,
-            options: {
-                responsive: true,
-                plugins: { legend: { display: true, position: 'bottom' } }
-            }
+        let html = '<ul style="list-style:none;">';
+        activities.slice(0, 10).forEach(a => {
+            html += `<li style="padding:10px 0; border-bottom:1px solid #eee; font-size:14px;">
+                <strong>${a.name}</strong> - ${a.type} <span style="float:right; color:var(--muted); font-size:12px;">${new Date(a.time).toLocaleString()}</span>
+            </li>`;
         });
-    }
-
-    function getLast7DaysHydration() {
-        const labels = [];
-        const values = [];
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            const dateStr = date.toISOString().split('T')[0];
-            labels.push(new Date(dateStr).toLocaleDateString('pt-BR', { weekday: 'short' }));
-            
-            let dayTotal = 0;
-            let count = 0;
-            Object.values(allData).forEach(emp => {
-                if (emp.hydration && emp.hydration[dateStr]) {
-                    dayTotal += emp.hydration[dateStr].waterIntake || 0;
-                    count++;
-                }
-            });
-            values.push(count > 0 ? (dayTotal / count / 1000).toFixed(1) : 0);
-        }
-        return { labels, values };
-    }
-
-    function getLatestPressures() {
-        const systolic = [];
-        const diastolic = [];
-        Object.values(allData).forEach(emp => {
-            if (emp.pressure) {
-                const latest = Object.values(emp.pressure).sort((a,b) => b.timestamp - a.timestamp)[0];
-                if (latest) {
-                    systolic.push({ x: emp.profile?.name || 'Anônimo', y: latest.systolic });
-                    diastolic.push({ x: emp.profile?.name || 'Anônimo', y: latest.diastolic });
-                }
-            }
-        });
-        return { systolic, diastolic };
-    }
-
-    function getComplaintsByType() {
-        const complaints = {};
-        Object.values(allData).forEach(emp => {
-            if (emp.complaints) {
-                Object.values(emp.complaints).forEach(c => {
-                    if (c.symptoms) {
-                        c.symptoms.forEach(s => {
-                            complaints[s] = (complaints[s] || 0) + 1;
-                        });
-                    }
-                });
-            }
-        });
-        return complaints;
-    }
-
-    function getCheckinsByStatus() {
-        const statuses = { 'Bem': 0, 'Dor Leve': 0, 'Dor Forte': 0 };
-        const today = new Date().toISOString().split('T')[0];
-        Object.values(allData).forEach(emp => {
-            if (emp.checkins && emp.checkins[today]) {
-                const status = emp.checkins[today].status;
-                if (status === 'bem') statuses['Bem']++;
-                else if (status === 'dor-leve') statuses['Dor Leve']++;
-                else if (status === 'dor-forte') statuses['Dor Forte']++;
-            }
-        });
-        return statuses;
-    }
-
-    function showNewCommunicado() {
-        const title = prompt('Título do comunicado:');
-        if (!title) return;
-        const message = prompt('Mensagem:');
-        if (!message) return;
-        
-        db.ref('canteiro-saudavel/comunicados').push({
-            title,
-            message,
-            createdAt: new Date().getTime()
-        });
+        html += '</ul>';
+        document.getElementById('recent-activity').innerHTML = activities.length > 0 ? html : 'Nenhuma atividade recente.';
     }
 
     async function generateReport() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         doc.setFontSize(20);
-        doc.setTextColor(27, 138, 76);
+        doc.setTextColor(22, 163, 74);
         doc.text('Relatório SESMT - Canteiro Saudável', 14, 20);
         doc.setFontSize(10);
         doc.setTextColor(100);
@@ -619,7 +371,7 @@
             head: [['Matrícula', 'Nome', 'Pressão', 'Água Hoje', 'Check-in']],
             body: tableData,
             theme: 'striped',
-            headStyles: { fillColor: [27, 138, 76] }
+            headStyles: { fillColor: [22, 163, 74] }
         });
 
         doc.save(`Relatorio_Canteiro_${new Date().toISOString().split('T')[0]}.pdf`);

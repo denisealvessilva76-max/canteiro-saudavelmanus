@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Canteiro Saudável</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1B8A4C 0%, #2DA85C 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #1B8A4C;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .logout-btn {
+            background: #1B8A4C;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #156a3a;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background: #f0f0f0;
+            color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #1B8A4C;
+            color: white;
+        }
+
+        .tab-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .tab-btn.active:hover {
+            background: #156a3a;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #1B8A4C;
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            color: #1B8A4C;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-card h3 {
+            color: #1B8A4C;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .table-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .table-card h3 {
+            color: #1B8A4C;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f5f5f5;
+            color: #1B8A4C;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #1B8A4C;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1B8A4C 0%, #2DA85C 100%);
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-card h1 {
+            color: #1B8A4C;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .login-card p {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Nunito', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #1B8A4C;
+            box-shadow: 0 0 0 3px rgba(27, 138, 76, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #1B8A4C;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #156a3a;
+        }
+
+        .error {
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #1B8A4C;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-warning {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .badge-danger {
+            background: #ffebee;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-view" class="login-container">
+        <div class="login-card">
+            <h1>🏗️ Canteiro Saudável</h1>
+            <p>Painel Administrativo</p>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="seu@email.com" value="denisealvessilva76@gmail.com">
+            </div>
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" id="password" placeholder="Sua senha" value="POTATO345">
+            </div>
+            <button class="login-btn" onclick="handleLogin()">Entrar</button>
+            <div id="login-error" class="error"></div>
+        </div>
+    </div>
+
+    <div id="admin-view" class="hidden">
+        <div class="container">
+            <div class="header">
+                <div>
+                    <h1>🏗️ Canteiro Saudável</h1>
+                    <p class="header-subtitle">Painel Administrativo de Saúde Ocupacional</p>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">Sair</button>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
+                <button class="tab-btn" onclick="switchTab('funcionarios')">Funcionários</button>
+                <button class="tab-btn" onclick="switchTab('saude')">Saúde</button>
+                <button class="tab-btn" onclick="switchTab('desafios')">Desafios</button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total de Funcionários</h3>
+                        <div class="value" id="total-employees">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Check-ins Hoje</h3>
+                        <div class="value" id="checkins-today">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Hidratação Média</h3>
+                        <div class="value" id="hydration-avg">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Alertas Críticos</h3>
+                        <div class="value" id="critical-alerts">0</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Hidratação (7 dias)</h3>
+                        <div class="chart-container">
+                            <canvas id="hydrationChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Pressão Arterial</h3>
+                        <div class="chart-container">
+                            <canvas id="pressureChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Queixas por Tipo</h3>
+                        <div class="chart-container">
+                            <canvas id="complaintsChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Check-ins por Status</h3>
+                        <div class="chart-container">
+                            <canvas id="checkinsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Funcionários Tab -->
+            <div id="funcionarios" class="tab-content">
+                <div class="table-card">
+                    <h3>Lista de Funcionários</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Matrícula</th>
+                                <th>Nome</th>
+                                <th>Turno</th>
+                                <th>Altura (cm)</th>
+                                <th>Peso (kg)</th>
+                                <th>Último Acesso</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employees-table">
+                            <tr><td colspan="6" style="text-align: center; color: #999;">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Saúde Tab -->
+            <div id="saude" class="tab-content">
+                <div class="table-card">
+                    <h3>Alertas de Saúde</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Funcionário</th>
+                                <th>Tipo de Alerta</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody id="health-alerts-table">
+                            <tr><td colspan="5" style="text-align: center; color: #999;">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Desafios Tab -->
+            <div id="desafios" class="tab-content">
+                <div class="table-card">
+                    <h3>Desafios em Progresso</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Funcionário</th>
+                                <th>Tipo de Desafio</th>
+                                <th>Progresso</th>
+                                <th>Status</th>
+                                <th>Data Início</th>
+                            </tr>
+                        </thead>
+                        <tbody id="challenges-table">
+                            <tr><td colspan="5" style="text-align: center; color: #999;">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyB32S5Eac0guxy1herefub70AIAGkgF1Rw",
+            authDomain: "canteiro-saudavel.firebaseapp.com",
+            databaseURL: "https://canteiro-saudavel-default-rtdb.firebaseio.com",
+            projectId: "canteiro-saudavel",
+            storageBucket: "canteiro-saudavel.firebasestorage.app",
+            messagingSenderId: "37768857073",
+            appId: "1:37768857073:web:3e62666713391869813050"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let charts = {};
+        let currentUser = null;
+
+        // Login Handler
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            if (!email || !password) {
+                errorDiv.textContent = 'Por favor, preencha todos os campos';
+                return;
+            }
+
+            try {
+                errorDiv.textContent = '';
+                const result = await auth.signInWithEmailAndPassword(email, password);
+                currentUser = result.user;
+                showAdminView();
+                loadDashboard();
+            } catch (error) {
+                errorDiv.textContent = 'Email ou senha incorretos';
+                console.error('Login error:', error);
+            }
+        }
+
+        // Logout Handler
+        function handleLogout() {
+            auth.signOut().then(() => {
+                currentUser = null;
+                showLoginView();
+            });
+        }
+
+        // View Switching
+        function showLoginView() {
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+        }
+
+        function showAdminView() {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.remove('hidden');
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load tab data
+            if (tabName === 'funcionarios') loadEmployees();
+            else if (tabName === 'saude') loadHealthAlerts();
+            else if (tabName === 'desafios') loadChallenges();
+        }
+
+        // Load Dashboard
+        function loadDashboard() {
+            loadStats();
+            loadCharts();
+        }
+
+        // Load Stats
+        function loadStats() {
+            db.ref('employees').once('value', snapshot => {
+                const employees = snapshot.val() || {};
+                document.getElementById('total-employees').textContent = Object.keys(employees).length;
+            });
+
+            // Check-ins today
+            const today = new Date().toISOString().split('T')[0];
+            db.ref(`health_data`).orderByChild('date').equalTo(today).once('value', snapshot => {
+                const data = snapshot.val() || {};
+                document.getElementById('checkins-today').textContent = Object.keys(data).length;
+            });
+        }
+
+        // Load Charts
+        function loadCharts() {
+            loadHydrationChart();
+            loadPressureChart();
+            loadComplaintsChart();
+            loadCheckinsChart();
+        }
+
+        function loadHydrationChart() {
+            const ctx = document.getElementById('hydrationChart').getContext('2d');
+            charts.hydration = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
+                    datasets: [{
+                        label: 'Hidratação (%)',
+                        data: [65, 72, 68, 75, 80, 70, 65],
+                        borderColor: '#1B8A4C',
+                        backgroundColor: 'rgba(27, 138, 76, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function loadPressureChart() {
+            const ctx = document.getElementById('pressureChart').getContext('2d');
+            charts.pressure = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Sistólica vs Diastólica',
+                        data: [
+                            {x: 120, y: 80}, {x: 130, y: 85}, {x: 125, y: 82},
+                            {x: 140, y: 90}, {x: 115, y: 75}, {x: 135, y: 88}
+                        ],
+                        backgroundColor: '#1B8A4C',
+                        borderColor: '#156a3a',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { title: { display: true, text: 'Sistólica' } },
+                        y: { title: { display: true, text: 'Diastólica' } }
+                    }
+                }
+            });
+        }
+
+        function loadComplaintsChart() {
+            const ctx = document.getElementById('complaintsChart').getContext('2d');
+            charts.complaints = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Dor nas Costas', 'Dor no Pescoço', 'Fadiga', 'Nenhuma'],
+                    datasets: [{
+                        data: [35, 25, 20, 20],
+                        backgroundColor: ['#1B8A4C', '#2DA85C', '#4CAF50', '#81C784']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        function loadCheckinsChart() {
+            const ctx = document.getElementById('checkinsChart').getContext('2d');
+            charts.checkins = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Excelente', 'Bom', 'Regular', 'Ruim'],
+                    datasets: [{
+                        label: 'Check-ins',
+                        data: [45, 38, 15, 2],
+                        backgroundColor: '#1B8A4C'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // Load Employees
+        function loadEmployees() {
+            db.ref('employees').once('value', snapshot => {
+                const employees = snapshot.val() || {};
+                const tbody = document.getElementById('employees-table');
+                tbody.innerHTML = '';
+
+                if (Object.keys(employees).length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">Nenhum funcionário cadastrado</td></tr>';
+                    return;
+                }
+
+                Object.values(employees).forEach(emp => {
+                    const row = `
+                        <tr>
+                            <td>${emp.matricula || '-'}</td>
+                            <td>${emp.name || '-'}</td>
+                            <td>${emp.turno || '-'}</td>
+                            <td>${emp.height || '-'}</td>
+                            <td>${emp.weight || '-'}</td>
+                            <td>${emp.lastAccess ? new Date(emp.lastAccess).toLocaleDateString('pt-BR') : '-'}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            });
+        }
+
+        // Load Health Alerts
+        function loadHealthAlerts() {
+            db.ref('health_data').once('value', snapshot => {
+                const data = snapshot.val() || {};
+                const tbody = document.getElementById('health-alerts-table');
+                tbody.innerHTML = '';
+
+                let alerts = [];
+                Object.values(data).forEach(record => {
+                    if (record.pressao_sistolica > 140 || record.pressao_diastolica > 90) {
+                        alerts.push({
+                            name: record.name || 'Desconhecido',
+                            type: 'Pressão Elevada',
+                            value: `${record.pressao_sistolica}/${record.pressao_diastolica}`,
+                            status: 'danger',
+                            date: record.date
+                        });
+                    }
+                });
+
+                if (alerts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Nenhum alerta crítico</td></tr>';
+                    return;
+                }
+
+                alerts.forEach(alert => {
+                    const row = `
+                        <tr>
+                            <td>${alert.name}</td>
+                            <td>${alert.type}</td>
+                            <td>${alert.value}</td>
+                            <td><span class="badge badge-danger">Crítico</span></td>
+                            <td>${alert.date || '-'}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            });
+        }
+
+        // Load Challenges
+        function loadChallenges() {
+            db.ref('active_challenges').once('value', snapshot => {
+                const data = snapshot.val() || {};
+                const tbody = document.getElementById('challenges-table');
+                tbody.innerHTML = '';
+
+                if (Object.keys(data).length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Nenhum desafio em progresso</td></tr>';
+                    return;
+                }
+
+                Object.values(data).forEach(challenge => {
+                    const row = `
+                        <tr>
+                            <td>${challenge.employee_name || '-'}</td>
+                            <td>${challenge.type || '-'}</td>
+                            <td>${challenge.progress || 0}%</td>
+                            <td><span class="badge badge-success">Em Progresso</span></td>
+                            <td>${challenge.start_date || '-'}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            });
+        }
+
+        // Check auth state
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                showAdminView();
+                loadDashboard();
+            } else {
+                showLoginView();
+            }
+        });
+    </script>
+</body>
+</html>

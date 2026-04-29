@@ -97,64 +97,17 @@ export function useAuth(options?: UseAuthOptions) {
       setLoading(true);
       setError(null);
 
-      console.log("[useAuth] Registering user in backend...", { matricula, nome });
+      console.log("[useAuth] Starting local login...", { matricula, nome });
 
-      // CRITICAL: Register user in PostgreSQL backend first via direct API call
-      // Gerar CPF fake baseado na matrícula (11 dígitos)
-      const cpfFake = matricula.padStart(11, "0");
-      
-      const response = await fetch(`${getApiBaseUrl()}/api/trpc/employeeAuth.register?batch=1`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          "0": {
-            json: {
-              name: nome,
-              cpf: cpfFake,
-              matricula: matricula,
-              weight: 70,
-              height: 170,
-              setor: "Geral",
-              cargo: "Funcionário",
-              workType: "moderado",
-            },
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Falha ao cadastrar usuário no backend");
-      }
-
-      const registerResult = await response.json();
-      console.log("[useAuth] Backend registration result:", JSON.stringify(registerResult, null, 2));
-
-      const resultData = registerResult[0]?.result?.data?.json;
-      console.log("[useAuth] Extracted resultData:", JSON.stringify(resultData, null, 2));
-      
-      // Se o CPF já existe ou houve sucesso, permitir login local
-      const isSuccess = resultData?.success === true;
-      const isExistingUser = resultData?.message?.includes("CPF já cadastrado") || resultData?.error?.includes("CPF já cadastrado");
-      
-      console.log("[useAuth] Login check:", { isSuccess, isExistingUser, hasResultData: !!resultData });
-      
-      if (!resultData && !isSuccess && !isExistingUser) {
-        console.error("[useAuth] Login failed: no valid response from backend");
-        throw new Error("Falha ao cadastrar usuário no servidor");
-      }
-
-      // Create user object
+      // Create user object directly (local auth only)
       const userInfo: Auth.User = {
-        id: resultData?.employee?.id || parseInt(matricula, 10),
+        id: parseInt(matricula, 10),
         openId: matricula,
         name: nome,
         email: `${matricula}@empresa.com`,
         loginMethod: "local",
         lastSignedIn: new Date(),
-        firstLogin: resultData?.employee?.firstLogin ?? false,
+        firstLogin: false,
       };
 
       // Save user info locally
@@ -164,7 +117,7 @@ export function useAuth(options?: UseAuthOptions) {
       await Auth.setSessionToken(matricula);
       
       setUser(userInfo);
-      console.log("[useAuth] User logged in and registered:", userInfo);
+      console.log("[useAuth] User logged in successfully:", userInfo);
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Failed to login");
       console.error("[useAuth] login error:", error);
@@ -194,29 +147,27 @@ export function useAuth(options?: UseAuthOptions) {
   useEffect(() => {
     console.log("[useAuth] useEffect triggered, autoFetch:", autoFetch, "platform:", Platform.OS);
     if (autoFetch) {
-      if (Platform.OS === "web") {
-        // Web: fetch user from API directly (user will login manually if needed)
-        console.log("[useAuth] Web: fetching user from API...");
-        fetchUser();
-      } else {
-        // Native: check for cached user info first for faster initial load
-        Auth.getUserInfo().then((cachedUser) => {
-          console.log("[useAuth] Native cached user check:", cachedUser);
-          if (cachedUser) {
-            console.log("[useAuth] Native: setting cached user immediately");
-            setUser(cachedUser);
-            setLoading(false);
-          } else {
-            // No cached user, check session token
-            fetchUser();
-          }
-        });
-      }
+      // Check for cached user info first (both web and native)
+      Auth.getUserInfo().then((cachedUser) => {
+        console.log("[useAuth] Cached user check:", cachedUser);
+        if (cachedUser) {
+          console.log("[useAuth] Setting cached user immediately");
+          setUser(cachedUser);
+          setLoading(false);
+        } else {
+          // No cached user, set loading to false
+          console.log("[useAuth] No cached user");
+          setLoading(false);
+        }
+      }).catch((err) => {
+        console.error("[useAuth] Error checking cached user:", err);
+        setLoading(false);
+      });
     } else {
       console.log("[useAuth] autoFetch disabled, setting loading to false");
       setLoading(false);
     }
-  }, [autoFetch, fetchUser]);
+  }, [autoFetch]);
 
   useEffect(() => {
     console.log("[useAuth] State updated:", {

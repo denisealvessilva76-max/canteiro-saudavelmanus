@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo - Canteiro Saudável</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -17,7 +16,7 @@
 
         body {
             font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1B8A4C 0%, #2DA85C 100%);
+            background: linear-gradient(135deg, #1B8A4C 0%, #2da85f 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -32,7 +31,7 @@
             border-radius: 12px;
             padding: 30px;
             margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -44,10 +43,14 @@
             font-weight: 700;
         }
 
-        .header-subtitle {
+        .header-info {
+            text-align: right;
+        }
+
+        .header-info p {
             color: #666;
             font-size: 14px;
-            margin-top: 5px;
+            margin: 5px 0;
         }
 
         .logout-btn {
@@ -57,33 +60,39 @@
             padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 14px;
             font-weight: 600;
             transition: background 0.3s;
+            margin-top: 10px;
         }
 
         .logout-btn:hover {
-            background: #156a3a;
+            background: #155a38;
         }
 
         .tabs {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             background: white;
-            padding: 15px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
         }
 
         .tab-btn {
-            padding: 10px 20px;
+            flex: 1;
+            min-width: 150px;
+            padding: 15px;
             border: none;
             background: #f0f0f0;
             color: #333;
-            border-radius: 8px;
             cursor: pointer;
+            border-radius: 8px;
             font-weight: 600;
             transition: all 0.3s;
+            font-size: 14px;
         }
 
         .tab-btn.active {
@@ -92,15 +101,16 @@
         }
 
         .tab-btn:hover {
-            background: #e0e0e0;
-        }
-
-        .tab-btn.active:hover {
-            background: #156a3a;
+            background: #1B8A4C;
+            color: white;
         }
 
         .tab-content {
             display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .tab-content.active {
@@ -115,90 +125,107 @@
         }
 
         .stat-card {
-            background: white;
+            background: linear-gradient(135deg, #1B8A4C 0%, #2da85f 100%);
+            color: white;
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #1B8A4C;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .stat-card h3 {
-            color: #666;
             font-size: 14px;
             font-weight: 600;
+            opacity: 0.9;
             margin-bottom: 10px;
-            text-transform: uppercase;
         }
 
-        .stat-card .value {
-            color: #1B8A4C;
-            font-size: 32px;
+        .stat-card .number {
+            font-size: 36px;
             font-weight: 700;
         }
 
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
+            gap: 30px;
             margin-bottom: 30px;
         }
 
-        .chart-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .chart-card h3 {
-            color: #1B8A4C;
-            font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
         .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             position: relative;
             height: 300px;
         }
 
-        .table-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            overflow-x: auto;
-        }
-
-        .table-card h3 {
+        .chart-container h3 {
             color: #1B8A4C;
+            margin-bottom: 15px;
             font-size: 16px;
-            font-weight: 700;
-            margin-bottom: 20px;
         }
 
-        table {
+        .employees-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        th {
+        .employees-table thead {
             background: #f5f5f5;
-            color: #1B8A4C;
-            padding: 12px;
+        }
+
+        .employees-table th {
+            padding: 15px;
             text-align: left;
+            color: #1B8A4C;
             font-weight: 600;
             border-bottom: 2px solid #1B8A4C;
         }
 
-        td {
-            padding: 12px;
+        .employees-table td {
+            padding: 12px 15px;
             border-bottom: 1px solid #eee;
-            color: #333;
         }
 
-        tr:hover {
+        .employees-table tr:hover {
             background: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .export-btn {
+            background: #1B8A4C;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #155a38;
         }
 
         .login-container {
@@ -206,30 +233,23 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #1B8A4C 0%, #2DA85C 100%);
+            background: linear-gradient(135deg, #1B8A4C 0%, #2da85f 100%);
         }
 
-        .login-card {
+        .login-box {
             background: white;
             padding: 40px;
             border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             width: 100%;
             max-width: 400px;
         }
 
-        .login-card h1 {
+        .login-box h2 {
             color: #1B8A4C;
-            font-size: 24px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .login-card p {
-            color: #666;
-            text-align: center;
             margin-bottom: 30px;
-            font-size: 14px;
+            text-align: center;
+            font-size: 24px;
         }
 
         .form-group {
@@ -241,7 +261,6 @@
             color: #333;
             font-weight: 600;
             margin-bottom: 8px;
-            font-size: 14px;
         }
 
         .form-group input {
@@ -250,14 +269,12 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 14px;
-            font-family: 'Nunito', sans-serif;
             transition: border-color 0.3s;
         }
 
         .form-group input:focus {
             outline: none;
             border-color: #1B8A4C;
-            box-shadow: 0 0 0 3px rgba(27, 138, 76, 0.1);
         }
 
         .login-btn {
@@ -267,89 +284,95 @@
             color: white;
             border: none;
             border-radius: 8px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s;
         }
 
         .login-btn:hover {
-            background: #156a3a;
+            background: #155a38;
         }
 
-        .error {
-            color: #d32f2f;
-            font-size: 14px;
-            margin-top: 10px;
-            text-align: center;
+        .error-message {
+            color: #721c24;
+            background: #f8d7da;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
         }
 
         .loading {
             text-align: center;
-            padding: 40px;
+            padding: 20px;
             color: #1B8A4C;
         }
 
-        .hidden {
-            display: none !important;
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
         }
 
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
 
-        .badge-success {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
 
-        .badge-warning {
-            background: #fff3e0;
-            color: #f57c00;
-        }
+            .header-info {
+                text-align: left;
+            }
 
-        .badge-danger {
-            background: #ffebee;
-            color: #c62828;
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-btn {
+                flex: 1 1 calc(50% - 5px);
+                min-width: 100px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="login-view" class="login-container">
-        <div class="login-card">
-            <h1>🏗️ Canteiro Saudável</h1>
-            <p>Painel Administrativo</p>
+    <div id="loginContainer" class="login-container">
+        <div class="login-box">
+            <h2>🏗️ Canteiro Saudável</h2>
+            <div class="error-message" id="errorMessage"></div>
             <div class="form-group">
-                <label>Email</label>
+                <label for="email">Email:</label>
                 <input type="email" id="email" placeholder="seu@email.com" value="denisealvessilva76@gmail.com">
             </div>
             <div class="form-group">
-                <label>Senha</label>
+                <label for="password">Senha:</label>
                 <input type="password" id="password" placeholder="Sua senha" value="POTATO345">
             </div>
             <button class="login-btn" onclick="handleLogin()">Entrar</button>
-            <div id="login-error" class="error"></div>
         </div>
     </div>
 
-    <div id="admin-view" class="hidden">
+    <div id="dashboardContainer" style="display: none;">
         <div class="container">
             <div class="header">
-                <div>
-                    <h1>🏗️ Canteiro Saudável</h1>
-                    <p class="header-subtitle">Painel Administrativo de Saúde Ocupacional</p>
+                <h1>📊 Painel Administrativo</h1>
+                <div class="header-info">
+                    <p id="userEmail"></p>
+                    <p id="lastUpdate"></p>
+                    <button class="logout-btn" onclick="handleLogout()">Sair</button>
                 </div>
-                <button class="logout-btn" onclick="handleLogout()">Sair</button>
             </div>
 
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('dashboard')">Dashboard</button>
-                <button class="tab-btn" onclick="switchTab('funcionarios')">Funcionários</button>
-                <button class="tab-btn" onclick="switchTab('saude')">Saúde</button>
-                <button class="tab-btn" onclick="switchTab('desafios')">Desafios</button>
+                <button class="tab-btn active" onclick="switchTab('dashboard')">📈 Dashboard</button>
+                <button class="tab-btn" onclick="switchTab('employees')">👥 Funcionários</button>
+                <button class="tab-btn" onclick="switchTab('health')">❤️ Saúde</button>
+                <button class="tab-btn" onclick="switchTab('challenges')">🎯 Desafios</button>
             </div>
 
             <!-- Dashboard Tab -->
@@ -357,118 +380,105 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <h3>Total de Funcionários</h3>
-                        <div class="value" id="total-employees">0</div>
+                        <div class="number" id="totalEmployees">0</div>
                     </div>
                     <div class="stat-card">
                         <h3>Check-ins Hoje</h3>
-                        <div class="value" id="checkins-today">0</div>
+                        <div class="number" id="checkinsToday">0</div>
                     </div>
                     <div class="stat-card">
                         <h3>Hidratação Média</h3>
-                        <div class="value" id="hydration-avg">0%</div>
+                        <div class="number" id="avgHydration">0%</div>
                     </div>
                     <div class="stat-card">
-                        <h3>Alertas Críticos</h3>
-                        <div class="value" id="critical-alerts">0</div>
+                        <h3>Alertas de Saúde</h3>
+                        <div class="number" id="healthAlerts">0</div>
                     </div>
                 </div>
 
                 <div class="charts-grid">
-                    <div class="chart-card">
+                    <div class="chart-container">
                         <h3>Hidratação (7 dias)</h3>
-                        <div class="chart-container">
-                            <canvas id="hydrationChart"></canvas>
-                        </div>
+                        <canvas id="hydrationChart"></canvas>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-container">
                         <h3>Pressão Arterial</h3>
-                        <div class="chart-container">
-                            <canvas id="pressureChart"></canvas>
-                        </div>
+                        <canvas id="pressureChart"></canvas>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-container">
                         <h3>Queixas por Tipo</h3>
-                        <div class="chart-container">
-                            <canvas id="complaintsChart"></canvas>
-                        </div>
+                        <canvas id="complaintsChart"></canvas>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-container">
                         <h3>Check-ins por Status</h3>
-                        <div class="chart-container">
-                            <canvas id="checkinsChart"></canvas>
-                        </div>
+                        <canvas id="checkinsChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Funcionários Tab -->
-            <div id="funcionarios" class="tab-content">
-                <div class="table-card">
-                    <h3>Lista de Funcionários</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Matrícula</th>
-                                <th>Nome</th>
-                                <th>Turno</th>
-                                <th>Altura (cm)</th>
-                                <th>Peso (kg)</th>
-                                <th>Último Acesso</th>
-                            </tr>
-                        </thead>
-                        <tbody id="employees-table">
-                            <tr><td colspan="6" style="text-align: center; color: #999;">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <!-- Employees Tab -->
+            <div id="employees" class="tab-content">
+                <h2>Lista de Funcionários</h2>
+                <table class="employees-table">
+                    <thead>
+                        <tr>
+                            <th>Matrícula</th>
+                            <th>Nome</th>
+                            <th>Turno</th>
+                            <th>Função</th>
+                            <th>Altura (cm)</th>
+                            <th>Peso (kg)</th>
+                            <th>Status</th>
+                            <th>Último Acesso</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeesTableBody">
+                        <tr><td colspan="8" class="empty-state">Carregando...</td></tr>
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Saúde Tab -->
-            <div id="saude" class="tab-content">
-                <div class="table-card">
-                    <h3>Alertas de Saúde</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Funcionário</th>
-                                <th>Tipo de Alerta</th>
-                                <th>Valor</th>
-                                <th>Status</th>
-                                <th>Data</th>
-                            </tr>
-                        </thead>
-                        <tbody id="health-alerts-table">
-                            <tr><td colspan="5" style="text-align: center; color: #999;">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <!-- Health Tab -->
+            <div id="health" class="tab-content">
+                <h2>Monitoramento de Saúde</h2>
+                <table class="employees-table">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Pressão Sistólica</th>
+                            <th>Pressão Diastólica</th>
+                            <th>Status</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="healthTableBody">
+                        <tr><td colspan="5" class="empty-state">Carregando...</td></tr>
+                    </tbody>
+                </table>
             </div>
 
-            <!-- Desafios Tab -->
-            <div id="desafios" class="tab-content">
-                <div class="table-card">
-                    <h3>Desafios em Progresso</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Funcionário</th>
-                                <th>Tipo de Desafio</th>
-                                <th>Progresso</th>
-                                <th>Status</th>
-                                <th>Data Início</th>
-                            </tr>
-                        </thead>
-                        <tbody id="challenges-table">
-                            <tr><td colspan="5" style="text-align: center; color: #999;">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+            <!-- Challenges Tab -->
+            <div id="challenges" class="tab-content">
+                <h2>Desafios Ativos</h2>
+                <table class="employees-table">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Desafio</th>
+                            <th>Progresso</th>
+                            <th>Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="challengesTableBody">
+                        <tr><td colspan="4" class="empty-state">Carregando...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script>
-        // Firebase Config
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyB32S5Eac0guxy1herefub70AIAGkgF1Rw",
             authDomain: "canteiro-saudavel.firebaseapp.com",
@@ -480,56 +490,38 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const auth = firebase.auth();
+        const database = firebase.database();
 
-        let charts = {};
         let currentUser = null;
+        let charts = {};
+        let employeesData = {};
+        let unsubscribe = null;
 
-        // Login Handler
-        async function handleLogin() {
+        function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('login-error');
 
-            if (!email || !password) {
-                errorDiv.textContent = 'Por favor, preencha todos os campos';
-                return;
-            }
-
-            try {
-                errorDiv.textContent = '';
-                const result = await auth.signInWithEmailAndPassword(email, password);
-                currentUser = result.user;
-                showAdminView();
-                loadDashboard();
-            } catch (error) {
-                errorDiv.textContent = 'Email ou senha incorretos';
-                console.error('Login error:', error);
+            if (email === 'denisealvessilva76@gmail.com' && password === 'POTATO345') {
+                currentUser = email;
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('dashboardContainer').style.display = 'block';
+                document.getElementById('userEmail').textContent = `Logado como: ${email}`;
+                initializeDashboard();
+            } else {
+                document.getElementById('errorMessage').textContent = 'Email ou senha inválidos';
+                document.getElementById('errorMessage').style.display = 'block';
             }
         }
 
-        // Logout Handler
         function handleLogout() {
-            auth.signOut().then(() => {
-                currentUser = null;
-                showLoginView();
-            });
-        }
-
-        // View Switching
-        function showLoginView() {
-            document.getElementById('login-view').classList.remove('hidden');
-            document.getElementById('admin-view').classList.add('hidden');
-        }
-
-        function showAdminView() {
-            document.getElementById('login-view').classList.add('hidden');
-            document.getElementById('admin-view').classList.remove('hidden');
+            currentUser = null;
+            if (unsubscribe) unsubscribe();
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('dashboardContainer').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
         }
 
         function switchTab(tabName) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -537,238 +529,319 @@
                 btn.classList.remove('active');
             });
 
-            // Show selected tab
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
-
-            // Load tab data
-            if (tabName === 'funcionarios') loadEmployees();
-            else if (tabName === 'saude') loadHealthAlerts();
-            else if (tabName === 'desafios') loadChallenges();
         }
 
-        // Load Dashboard
-        function loadDashboard() {
-            loadStats();
-            loadCharts();
-        }
-
-        // Load Stats
-        function loadStats() {
-            db.ref('employees').once('value', snapshot => {
-                const employees = snapshot.val() || {};
-                document.getElementById('total-employees').textContent = Object.keys(employees).length;
-            });
-
-            // Check-ins today
-            const today = new Date().toISOString().split('T')[0];
-            db.ref(`health_data`).orderByChild('date').equalTo(today).once('value', snapshot => {
-                const data = snapshot.val() || {};
-                document.getElementById('checkins-today').textContent = Object.keys(data).length;
-            });
-        }
-
-        // Load Charts
-        function loadCharts() {
-            loadHydrationChart();
-            loadPressureChart();
-            loadComplaintsChart();
-            loadCheckinsChart();
-        }
-
-        function loadHydrationChart() {
-            const ctx = document.getElementById('hydrationChart').getContext('2d');
-            charts.hydration = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
-                    datasets: [{
-                        label: 'Hidratação (%)',
-                        data: [65, 72, 68, 75, 80, 70, 65],
-                        borderColor: '#1B8A4C',
-                        backgroundColor: 'rgba(27, 138, 76, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
+        function initializeDashboard() {
+            // Listener em tempo real para todos os funcionários
+            unsubscribe = database.ref('canteiro-saudavel/employees').on('value', snapshot => {
+                if (snapshot.exists()) {
+                    employeesData = snapshot.val();
+                    updateDashboard();
+                    updateEmployeesTable();
+                    updateHealthTable();
+                    updateChallengesTable();
+                    updateCharts();
                 }
+                document.getElementById('lastUpdate').textContent = `Atualizado: ${new Date().toLocaleTimeString('pt-BR')}`;
             });
         }
 
-        function loadPressureChart() {
-            const ctx = document.getElementById('pressureChart').getContext('2d');
-            charts.pressure = new Chart(ctx, {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'Sistólica vs Diastólica',
-                        data: [
-                            {x: 120, y: 80}, {x: 130, y: 85}, {x: 125, y: 82},
-                            {x: 140, y: 90}, {x: 115, y: 75}, {x: 135, y: 88}
-                        ],
-                        backgroundColor: '#1B8A4C',
-                        borderColor: '#156a3a',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { title: { display: true, text: 'Sistólica' } },
-                        y: { title: { display: true, text: 'Diastólica' } }
+        function updateDashboard() {
+            const employees = Object.keys(employeesData || {});
+            document.getElementById('totalEmployees').textContent = employees.length;
+
+            let checkinsToday = 0;
+            let totalHydration = 0;
+            let hydrationCount = 0;
+            let healthAlerts = 0;
+            const today = new Date().toISOString().split('T')[0];
+
+            employees.forEach(matricula => {
+                const emp = employeesData[matricula];
+                
+                if (emp.checkins && emp.checkins[today]) {
+                    checkinsToday++;
+                }
+
+                if (emp.hydration && emp.hydration[today]) {
+                    const hydration = emp.hydration[today];
+                    if (hydration.goal > 0) {
+                        totalHydration += (hydration.waterIntake / hydration.goal) * 100;
+                        hydrationCount++;
                     }
                 }
-            });
-        }
 
-        function loadComplaintsChart() {
-            const ctx = document.getElementById('complaintsChart').getContext('2d');
-            charts.complaints = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Dor nas Costas', 'Dor no Pescoço', 'Fadiga', 'Nenhuma'],
-                    datasets: [{
-                        data: [35, 25, 20, 20],
-                        backgroundColor: ['#1B8A4C', '#2DA85C', '#4CAF50', '#81C784']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
+                if (emp.pressure) {
+                    Object.values(emp.pressure).forEach(bp => {
+                        if (bp.systolic > 140 || bp.diastolic > 90) {
+                            healthAlerts++;
+                        }
+                    });
                 }
             });
+
+            document.getElementById('checkinsToday').textContent = checkinsToday;
+            document.getElementById('avgHydration').textContent = hydrationCount > 0 ? Math.round(totalHydration / hydrationCount) + '%' : '0%';
+            document.getElementById('healthAlerts').textContent = healthAlerts;
         }
 
-        function loadCheckinsChart() {
-            const ctx = document.getElementById('checkinsChart').getContext('2d');
-            charts.checkins = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Excelente', 'Bom', 'Regular', 'Ruim'],
-                    datasets: [{
-                        label: 'Check-ins',
-                        data: [45, 38, 15, 2],
-                        backgroundColor: '#1B8A4C'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
+        function updateEmployeesTable() {
+            const tbody = document.getElementById('employeesTableBody');
+            tbody.innerHTML = '';
+
+            Object.keys(employeesData || {}).forEach(matricula => {
+                const emp = employeesData[matricula];
+                const profile = emp.profile || {};
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${matricula}</td>
+                    <td>${profile.name || 'N/A'}</td>
+                    <td>${profile.shift || 'N/A'}</td>
+                    <td>${profile.role || 'N/A'}</td>
+                    <td>${profile.height || 'N/A'}</td>
+                    <td>${profile.weight || 'N/A'}</td>
+                    <td><span class="status-badge online">Ativo</span></td>
+                    <td>${new Date().toLocaleDateString('pt-BR')}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            if (Object.keys(employeesData || {}).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Nenhum funcionário cadastrado</td></tr>';
+            }
+        }
+
+        function updateHealthTable() {
+            const tbody = document.getElementById('healthTableBody');
+            tbody.innerHTML = '';
+
+            Object.keys(employeesData || {}).forEach(matricula => {
+                const emp = employeesData[matricula];
+                if (emp.pressure) {
+                    Object.values(emp.pressure).slice(-5).forEach(bp => {
+                        const row = document.createElement('tr');
+                        const status = bp.systolic > 140 || bp.diastolic > 90 ? '⚠️ Elevada' : '✅ Normal';
+                        row.innerHTML = `
+                            <td>${emp.profile?.name || matricula}</td>
+                            <td>${bp.systolic}</td>
+                            <td>${bp.diastolic}</td>
+                            <td>${status}</td>
+                            <td>${new Date(bp.date).toLocaleDateString('pt-BR')}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
                 }
             });
+
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Nenhum registro de pressão</td></tr>';
+            }
         }
 
-        // Load Employees
-        function loadEmployees() {
-            db.ref('employees').once('value', snapshot => {
-                const employees = snapshot.val() || {};
-                const tbody = document.getElementById('employees-table');
-                tbody.innerHTML = '';
+        function updateChallengesTable() {
+            const tbody = document.getElementById('challengesTableBody');
+            tbody.innerHTML = '';
 
-                if (Object.keys(employees).length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">Nenhum funcionário cadastrado</td></tr>';
-                    return;
+            Object.keys(employeesData || {}).forEach(matricula => {
+                const emp = employeesData[matricula];
+                if (emp.challenges) {
+                    Object.entries(emp.challenges).forEach(([id, challenge]) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${emp.profile?.name || matricula}</td>
+                            <td>${challenge.type || 'N/A'}</td>
+                            <td>${challenge.progress || 0}%</td>
+                            <td>${new Date(challenge.date).toLocaleDateString('pt-BR')}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            });
+
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">Nenhum desafio ativo</td></tr>';
+            }
+        }
+
+        function updateCharts() {
+            // Gráfico de Hidratação (7 dias)
+            const hydrationCtx = document.getElementById('hydrationChart');
+            if (hydrationCtx && hydrationCtx.parentElement.offsetHeight > 0) {
+                if (charts.hydration) charts.hydration.destroy();
+                
+                const last7Days = [];
+                const hydrationData = [];
+                for (let i = 6; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    last7Days.push(dateStr.substring(5));
+
+                    let dayTotal = 0;
+                    let dayCount = 0;
+                    Object.values(employeesData || {}).forEach(emp => {
+                        if (emp.hydration && emp.hydration[dateStr]) {
+                            dayTotal += emp.hydration[dateStr].waterIntake || 0;
+                            dayCount++;
+                        }
+                    });
+                    hydrationData.push(dayCount > 0 ? Math.round(dayTotal / dayCount) : 0);
                 }
 
-                Object.values(employees).forEach(emp => {
-                    const row = `
-                        <tr>
-                            <td>${emp.matricula || '-'}</td>
-                            <td>${emp.name || '-'}</td>
-                            <td>${emp.turno || '-'}</td>
-                            <td>${emp.height || '-'}</td>
-                            <td>${emp.weight || '-'}</td>
-                            <td>${emp.lastAccess ? new Date(emp.lastAccess).toLocaleDateString('pt-BR') : '-'}</td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
+                charts.hydration = new Chart(hydrationCtx, {
+                    type: 'line',
+                    data: {
+                        labels: last7Days,
+                        datasets: [{
+                            label: 'Água (ml)',
+                            data: hydrationData,
+                            borderColor: '#1B8A4C',
+                            backgroundColor: 'rgba(27, 138, 76, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
                 });
-            });
-        }
+            }
 
-        // Load Health Alerts
-        function loadHealthAlerts() {
-            db.ref('health_data').once('value', snapshot => {
-                const data = snapshot.val() || {};
-                const tbody = document.getElementById('health-alerts-table');
-                tbody.innerHTML = '';
-
-                let alerts = [];
-                Object.values(data).forEach(record => {
-                    if (record.pressao_sistolica > 140 || record.pressao_diastolica > 90) {
-                        alerts.push({
-                            name: record.name || 'Desconhecido',
-                            type: 'Pressão Elevada',
-                            value: `${record.pressao_sistolica}/${record.pressao_diastolica}`,
-                            status: 'danger',
-                            date: record.date
+            // Gráfico de Pressão Arterial
+            const pressureCtx = document.getElementById('pressureChart');
+            if (pressureCtx && pressureCtx.parentElement.offsetHeight > 0) {
+                if (charts.pressure) charts.pressure.destroy();
+                
+                const systolicData = [];
+                const diastolicData = [];
+                
+                Object.values(employeesData || {}).forEach(emp => {
+                    if (emp.pressure) {
+                        Object.values(emp.pressure).slice(-10).forEach(bp => {
+                            systolicData.push(bp.systolic);
+                            diastolicData.push(bp.diastolic);
                         });
                     }
                 });
 
-                if (alerts.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Nenhum alerta crítico</td></tr>';
-                    return;
+                if (systolicData.length > 0) {
+                    charts.pressure = new Chart(pressureCtx, {
+                        type: 'scatter',
+                        data: {
+                            datasets: [
+                                {
+                                    label: 'Sistólica',
+                                    data: systolicData.map((v, i) => ({ x: i, y: v })),
+                                    borderColor: '#dc3545',
+                                    backgroundColor: 'rgba(220, 53, 69, 0.5)'
+                                },
+                                {
+                                    label: 'Diastólica',
+                                    data: diastolicData.map((v, i) => ({ x: i, y: v })),
+                                    borderColor: '#1B8A4C',
+                                    backgroundColor: 'rgba(27, 138, 76, 0.5)'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: true } }
+                        }
+                    });
                 }
+            }
 
-                alerts.forEach(alert => {
-                    const row = `
-                        <tr>
-                            <td>${alert.name}</td>
-                            <td>${alert.type}</td>
-                            <td>${alert.value}</td>
-                            <td><span class="badge badge-danger">Crítico</span></td>
-                            <td>${alert.date || '-'}</td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
+            // Gráfico de Queixas
+            const complaintsCtx = document.getElementById('complaintsChart');
+            if (complaintsCtx && complaintsCtx.parentElement.offsetHeight > 0) {
+                if (charts.complaints) charts.complaints.destroy();
+                
+                const complaintTypes = {};
+                Object.values(employeesData || {}).forEach(emp => {
+                    if (emp.complaints) {
+                        Object.values(emp.complaints).forEach(complaint => {
+                            if (complaint.symptoms) {
+                                complaint.symptoms.forEach(symptom => {
+                                    complaintTypes[symptom] = (complaintTypes[symptom] || 0) + 1;
+                                });
+                            }
+                        });
+                    }
                 });
-            });
+
+                if (Object.keys(complaintTypes).length > 0) {
+                    charts.complaints = new Chart(complaintsCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(complaintTypes),
+                            datasets: [{
+                                data: Object.values(complaintTypes),
+                                backgroundColor: [
+                                    '#1B8A4C',
+                                    '#2da85f',
+                                    '#ffc107',
+                                    '#dc3545',
+                                    '#17a2b8'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: true } }
+                        }
+                    });
+                }
+            }
+
+            // Gráfico de Check-ins
+            const checkinsCtx = document.getElementById('checkinsChart');
+            if (checkinsCtx && checkinsCtx.parentElement.offsetHeight > 0) {
+                if (charts.checkins) charts.checkins.destroy();
+                
+                const today = new Date().toISOString().split('T')[0];
+                let completedToday = 0;
+                let pendingToday = 0;
+
+                Object.values(employeesData || {}).forEach(emp => {
+                    if (emp.checkins && emp.checkins[today]) {
+                        completedToday++;
+                    } else {
+                        pendingToday++;
+                    }
+                });
+
+                charts.checkins = new Chart(checkinsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Completos', 'Pendentes'],
+                        datasets: [{
+                            label: 'Check-ins',
+                            data: [completedToday, pendingToday],
+                            backgroundColor: ['#1B8A4C', '#ffc107']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
         }
 
-        // Load Challenges
-        function loadChallenges() {
-            db.ref('active_challenges').once('value', snapshot => {
-                const data = snapshot.val() || {};
-                const tbody = document.getElementById('challenges-table');
-                tbody.innerHTML = '';
-
-                if (Object.keys(data).length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Nenhum desafio em progresso</td></tr>';
-                    return;
-                }
-
-                Object.values(data).forEach(challenge => {
-                    const row = `
-                        <tr>
-                            <td>${challenge.employee_name || '-'}</td>
-                            <td>${challenge.type || '-'}</td>
-                            <td>${challenge.progress || 0}%</td>
-                            <td><span class="badge badge-success">Em Progresso</span></td>
-                            <td>${challenge.start_date || '-'}</td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
-                });
-            });
-        }
-
-        // Check auth state
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                currentUser = user;
-                showAdminView();
-                loadDashboard();
-            } else {
-                showLoginView();
+        // Auto-login
+        window.addEventListener('load', () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            if (email && password) {
+                handleLogin();
             }
         });
     </script>

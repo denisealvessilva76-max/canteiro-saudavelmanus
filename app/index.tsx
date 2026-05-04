@@ -1,73 +1,100 @@
+import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { View, ActivityIndicator, Text } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { trpc } from "@/lib/trpc";
+import { ScreenContainer } from "@/components/screen-container";
+import { useColors } from "@/hooks/use-colors";
 
-/**
- * Tela inicial que redireciona o usuário para:
- * - /cadastro: se não existe usuário no PostgreSQL
- * - /login: se existe usuário mas não está logado localmente
- * - /(tabs): se está logado
- * 
- * IMPORTANTE: Verifica no banco de dados, não apenas no AsyncStorage
- */
-export default function IndexScreen() {
-  const [checking, setChecking] = useState(true);
-  const params = useLocalSearchParams();
+export default function OnboardingScreen() {
+  const router = useRouter();
+  const colors = useColors();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkAuthStatus();
+    checkOnboardingStatus();
   }, []);
 
-  const checkAuthStatus = async () => {
+  const checkOnboardingStatus = async () => {
     try {
-      // Verificar se há parâmetro reset=true na URL
-      if (params.reset === 'true') {
-        console.log("[Index] Parâmetro reset detectado - limpando AsyncStorage");
-        await AsyncStorage.clear();
-        router.replace("/cadastro");
-        return;
-      }
-      
-      // 1. Verificar se há sessão de usuário salva (chave unificada)
-      const matricula = await AsyncStorage.getItem("employee:matricula");
-      const profileRaw = await AsyncStorage.getItem("employee:profile");
+      // Verificar se usuário já fez cadastro
+      const hasProfile = await AsyncStorage.getItem("employee:profile");
+      const hasMatricula = await AsyncStorage.getItem("employee:matricula");
 
-      if (matricula && profileRaw) {
-        // Usuário está logado localmente e perfil completo → ir para home (tabs)
-        console.log("[Index] Usuário logado localmente → redirecionando para home");
-        router.replace("/(tabs)");
-        return;
-      }
-
-      // 2. Não está logado localmente, verificar se já fez cadastro alguma vez
-      if (matricula) {
-        // Já fez cadastro (matricula existe) mas perfil está incompleto → ir para cadastro
-        console.log("[Index] Matrícula existe mas perfil incompleto → redirecionando para cadastro");
-        router.replace("/cadastro");
-      } else {
-        // Nunca fez cadastro → ir para tela de login (que permite ir para cadastro)
-        console.log("[Index] Nenhum cadastro encontrado → redirecionando para login");
+      if (hasProfile && hasMatricula) {
+        // Usuário já fez cadastro, ir para login
         router.replace("/login");
+      } else {
+        // Novo usuário, ir para cadastro
+        setIsLoading(false);
       }
     } catch (error) {
-      console.error("[Index] Erro ao verificar status de autenticação:", error);
-      // Em caso de erro, ir para cadastro (seguro)
-      router.replace("/cadastro");
-    } finally {
-      setChecking(false);
+      console.error("Erro ao verificar status:", error);
+      setIsLoading(false);
     }
   };
 
-  if (checking) {
+  if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-background">
-        <ActivityIndicator size="large" color="#16A34A" />
-        <Text className="text-muted mt-4">Carregando...</Text>
-      </View>
+      <ScreenContainer className="items-center justify-center">
+        <Text className="text-2xl font-bold text-foreground">Carregando...</Text>
+      </ScreenContainer>
     );
   }
 
-  return null;
+  return (
+    <ScreenContainer containerClassName="bg-gradient-to-b from-primary/10 to-background">
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}>
+        <View className="items-center justify-center gap-8 px-6 py-12">
+          {/* Logo/Ícone */}
+          <View className="items-center gap-4">
+            <View className="w-24 h-24 rounded-full bg-primary items-center justify-center">
+              <Text className="text-5xl">🌿</Text>
+            </View>
+            <Text className="text-3xl font-bold text-foreground">Canteiro Saudável</Text>
+            <Text className="text-base text-muted text-center">
+              Seu bem-estar é nossa prioridade
+            </Text>
+          </View>
+
+          {/* Benefícios */}
+          <View className="gap-4 w-full">
+            <BenefitCard icon="💧" title="Hidratação" description="Acompanhe seu consumo de água diário" />
+            <BenefitCard icon="🧘" title="Ergonomia" description="Alongamentos e exercícios guiados" />
+            <BenefitCard icon="🧠" title="Saúde Mental" description="Suporte e técnicas de respiração" />
+            <BenefitCard icon="🎯" title="Desafios" description="Gamificação e recompensas" />
+          </View>
+
+          {/* Botões */}
+          <View className="gap-3 w-full mt-8">
+            <TouchableOpacity
+              onPress={() => router.push("/cadastro")}
+              className="bg-primary rounded-xl py-4 items-center"
+            >
+              <Text className="text-white font-bold text-lg">Começar Agora</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("/login")}
+              className="border-2 border-primary rounded-xl py-4 items-center"
+            >
+              <Text className="text-primary font-bold text-lg">Já tenho cadastro</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </ScreenContainer>
+  );
+}
+
+function BenefitCard({ icon, title, description }: { icon: string; title: string; description: string }) {
+  const colors = useColors();
+  return (
+    <View className="flex-row items-center gap-4 bg-surface rounded-xl p-4 border border-border">
+      <Text className="text-4xl">{icon}</Text>
+      <View className="flex-1">
+        <Text className="text-base font-semibold text-foreground">{title}</Text>
+        <Text className="text-sm text-muted">{description}</Text>
+      </View>
+    </View>
+  );
 }

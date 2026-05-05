@@ -1,12 +1,13 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, Platform } from "react-native";
 import { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 export default function HomeScreen() {
+  const router = useRouter();
   const colors = useColors();
   const [profile, setProfile] = useState<any>(null);
   const [todayCheckin, setTodayCheckin] = useState<any>(null);
@@ -122,10 +123,10 @@ export default function HomeScreen() {
           <View>
             <Text className="text-lg font-bold text-foreground mb-3">Ações Rápidas</Text>
             <View className="gap-3">
-              <QuickActionButton icon="💧" label="Hidratação" />
-              <QuickActionButton icon="🧘" label="Alongamento" />
-              <QuickActionButton icon="🧠" label="Respiração" />
-              <QuickActionButton icon="🎯" label="Desafios" />
+              <QuickActionButton icon="💧" label="Hidratação" onPress={() => router.push('/(tabs)/saude')} />
+              <QuickActionButton icon="🧘" label="Alongamento" onPress={() => router.push('/(tabs)/ergonomia')} />
+              <QuickActionButton icon="🧠" label="Respiração" onPress={() => router.push('/(tabs)/comunicados')} />
+              <QuickActionButton icon="🎯" label="Desafios" onPress={() => router.push('/(tabs)/perfil')} />
             </View>
           </View>
 
@@ -151,9 +152,9 @@ function StatCard({ icon, label, value }: { icon: string; label: string; value: 
   );
 }
 
-function QuickActionButton({ icon, label }: { icon: string; label: string }) {
+function QuickActionButton({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {
   return (
-    <TouchableOpacity className="flex-row items-center gap-3 p-4 rounded-lg border-2 border-border bg-surface">
+    <TouchableOpacity onPress={onPress} className="flex-row items-center gap-3 p-4 rounded-lg border-2 border-border bg-surface active:opacity-70">
       <Text className="text-2xl">{icon}</Text>
       <Text className="text-sm font-semibold text-foreground flex-1">{label}</Text>
       <Text className="text-lg">→</Text>

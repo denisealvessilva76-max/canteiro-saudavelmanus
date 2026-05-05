@@ -25,9 +25,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     if (loading || checkingLocal || hasRedirected) return;
 
     const isLoginPage = pathname === "/login" || segments[0] === "login";
-    const isOnboardingPage = pathname === "/onboarding" || segments[0] === "onboarding";
+    const isCadastroPage = pathname === "/cadastro" || segments[0] === "cadastro";
+    const isTutorialPage = pathname === "/tutorial" || segments[0] === "tutorial";
+    const isOnboardingPage = pathname === "/onboarding" || segments[0] === "onboarding" || pathname === "/";
     const isAdminPage = segments[0]?.startsWith("admin");
-    const isPublicPage = isLoginPage || isOnboardingPage || isAdminPage;
+    const isPublicPage = isLoginPage || isCadastroPage || isTutorialPage || isOnboardingPage || isAdminPage;
 
     // Usar localUser (localStorage) como fallback para user (contexto)
     const hasUser = user || localUser;
@@ -71,9 +73,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Usar localUser (localStorage) como fallback para user (contexto)
   const hasUser = user || localUser;
   const isLoginPage = pathname === "/login" || segments[0] === "login";
-  const isOnboardingPage = pathname === "/onboarding" || segments[0] === "onboarding";
+  const isCadastroPage = pathname === "/cadastro" || segments[0] === "cadastro";
+  const isTutorialPage = pathname === "/tutorial" || segments[0] === "tutorial";
+  const isOnboardingPage = pathname === "/onboarding" || segments[0] === "onboarding" || pathname === "/";
   const isAdminPage = segments[0]?.startsWith("admin");
-  const isPublicPage = isLoginPage || isOnboardingPage || isAdminPage;
+  const isPublicPage = isLoginPage || isCadastroPage || isTutorialPage || isOnboardingPage || isAdminPage;
 
   // Se não há usuário e não está em páginas públicas, mostrar tela de carregamento
   if (!hasUser && !isPublicPage) {

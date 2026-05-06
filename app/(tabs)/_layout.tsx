@@ -16,8 +16,8 @@ export default function TabLayout() {
     <ProtectedRoute>
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.tint,
-        tabBarInactiveTintColor: colors.muted,
+        tabBarActiveTintColor: "#1B8A4C",
+        tabBarInactiveTintColor: "#999",
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarLabelStyle: {
@@ -29,8 +29,8 @@ export default function TabLayout() {
           paddingTop: 6,
           paddingBottom: bottomPadding,
           height: tabBarHeight,
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
+        backgroundColor: "#FFFFFF",
+        borderTopColor: "#E5E7EB",
           borderTopWidth: 0.5,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -2 },
@@ -45,7 +45,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.iconWrap, focused && { backgroundColor: colors.primary + "22" }]}>
+            <View style={[styles.iconWrap, focused && { backgroundColor: "#1B8A4C22" }]}>
               <IconSymbol size={23} name="house.fill" color={color} />
             </View>
           ),
@@ -56,7 +56,7 @@ export default function TabLayout() {
         options={{
           title: "Ergonomia",
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.iconWrap, focused && { backgroundColor: colors.primary + "22" }]}>
+            <View style={[styles.iconWrap, focused && { backgroundColor: "#1B8A4C22" }]}>
               <IconSymbol size={23} name="chevron.left.forwardslash.chevron.right" color={color} />
             </View>
           ),
@@ -67,7 +67,7 @@ export default function TabLayout() {
         options={{
           title: "Saúde",
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.iconWrap, focused && { backgroundColor: colors.primary + "22" }]}>
+            <View style={[styles.iconWrap, focused && { backgroundColor: "#1B8A4C22" }]}>
               <IconSymbol size={23} name="heart.fill" color={color} />
             </View>
           ),
@@ -78,7 +78,7 @@ export default function TabLayout() {
         options={{
           title: "Avisos",
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.iconWrap, focused && { backgroundColor: colors.primary + "22" }]}>
+            <View style={[styles.iconWrap, focused && { backgroundColor: "#1B8A4C22" }]}>
               <IconSymbol size={23} name="bell.fill" color={color} />
             </View>
           ),
@@ -89,7 +89,7 @@ export default function TabLayout() {
         options={{
           title: "Perfil",
           tabBarIcon: ({ color, focused }) => (
-            <View style={[styles.iconWrap, focused && { backgroundColor: colors.primary + "22" }]}>
+            <View style={[styles.iconWrap, focused && { backgroundColor: "#1B8A4C22" }]}>
               <IconSymbol size={23} name="person.fill" color={color} />
             </View>
           ),

@@ -1,181 +1,390 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, FlatList } from "react-native";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScreenContainer } from "@/components/screen-container";
+import * as Haptics from "expo-haptics";
+import { Platform } from "react-native";
 
-const comunicadosDefault = [
+const MOCK_AVISOS = [
   {
     id: 1,
-    titulo: "Bem-vindo ao Canteiro Saudável!",
-    descricao: "Seu aplicativo de saúde e bem-estar no trabalho",
-    categoria: "geral",
-    data: "Hoje",
-    lido: false,
+    title: "🎉 Novo Desafio Disponível",
+    description: "Desafio de Hidratação: Beba 2L de água por 7 dias consecutivos",
+    category: "desafio",
+    date: new Date(Date.now() - 2 * 60 * 60 * 1000).toLocaleString("pt-BR"),
+    isUrgent: false,
+    isRead: false,
   },
   {
     id: 2,
-    titulo: "Desafio de Hidratação",
-    descricao: "Participe do desafio e ganhe 50 pontos",
-    categoria: "desafio",
-    data: "Ontem",
-    lido: false,
+    title: "⚠️ Aviso Importante",
+    description: "Manutenção do sistema prevista para amanhã às 22h",
+    category: "urgente",
+    date: new Date(Date.now() - 1 * 60 * 60 * 1000).toLocaleString("pt-BR"),
+    isUrgent: true,
+    isRead: false,
   },
   {
     id: 3,
-    titulo: "Novo Prêmio Disponível",
-    descricao: "Resgate seus pontos por um brinde especial",
-    categoria: "recompensa",
-    data: "2 dias atrás",
-    lido: true,
+    title: "📢 Comunicado Geral",
+    description: "Lembramos que o check-in diário é importante para sua saúde",
+    category: "informativo",
+    date: new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleString("pt-BR"),
+    isUrgent: false,
+    isRead: true,
+  },
+  {
+    id: 4,
+    title: "🏆 Parabéns!",
+    description: "Você atingiu 100 pontos! Continue assim!",
+    category: "reconhecimento",
+    date: new Date(Date.now() - 48 * 60 * 60 * 1000).toLocaleString("pt-BR"),
+    isUrgent: false,
+    isRead: true,
+  },
+  {
+    id: 5,
+    title: "💊 Dica de Saúde",
+    description: "Beba água regularmente ao longo do dia para manter-se hidratado",
+    category: "saude",
+    date: new Date(Date.now() - 72 * 60 * 60 * 1000).toLocaleString("pt-BR"),
+    isUrgent: false,
+    isRead: true,
   },
 ];
 
 export default function ComunicadosScreen() {
-  const [comunicados, setComunicados] = useState(comunicadosDefault);
-  const [filtro, setFiltro] = useState("todos");
+  const [activeFilter, setActiveFilter] = useState<"todos" | "urgente" | "informativo">("todos");
+  const [avisos, setAvisos] = useState(MOCK_AVISOS);
+  const [readIds, setReadIds] = useState<number[]>([]);
 
   useEffect(() => {
-    loadComunicados();
+    loadReadStatus();
   }, []);
 
-  const loadComunicados = async () => {
+  const loadReadStatus = async () => {
     try {
-      const saved = await AsyncStorage.getItem("comunicados:list");
-      if (saved) {
-        setComunicados(JSON.parse(saved));
+      const readStr = await AsyncStorage.getItem("avisos:read");
+      if (readStr) {
+        setReadIds(JSON.parse(readStr));
       }
     } catch (error) {
-      console.error("Erro ao carregar comunicados:", error);
+      console.error("Erro ao carregar status de leitura:", error);
     }
   };
 
-  const filtrados = comunicados.filter((c) => {
-    if (filtro === "todos") return true;
-    return c.categoria === filtro;
-  });
+  const markAsRead = async (id: number) => {
+    try {
+      const newReadIds = [...readIds, id];
+      await AsyncStorage.setItem("avisos:read", JSON.stringify(newReadIds));
+      setReadIds(newReadIds);
 
-  const marcarComoLido = async (id: number) => {
-    const updated = comunicados.map((c) =>
-      c.id === id ? { ...c, lido: true } : c
+      if (Platform.OS !== "web") {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Light);
+      }
+    } catch (error) {
+      console.error("Erro ao marcar como lido:", error);
+    }
+  };
+
+  const getFilteredAvisos = () => {
+    return avisos.filter((aviso) => {
+      if (activeFilter === "urgente") {
+        return aviso.isUrgent;
+      }
+      if (activeFilter === "informativo") {
+        return !aviso.isUrgent;
+      }
+      return true;
+    });
+  };
+
+  const filteredAvisos = getFilteredAvisos();
+  const unreadCount = avisos.filter((a) => !readIds.includes(a.id)).length;
+
+  const renderAviso = ({ item }: { item: typeof MOCK_AVISOS[0] }) => {
+    const isRead = readIds.includes(item.id);
+
+    return (
+      <TouchableOpacity
+        style={[styles.avisoCard, isRead && styles.avisoCardRead]}
+        onPress={() => !isRead && markAsRead(item.id)}
+      >
+        {!isRead && <View style={styles.unreadDot} />}
+
+        <View style={styles.avisoContent}>
+          <View style={styles.avisoHeader}>
+            <Text style={[styles.avisoTitle, !isRead && styles.avisoTitleBold]}>
+              {item.title}
+            </Text>
+            {item.isUrgent && <View style={styles.urgentBadge} />}
+          </View>
+
+          <Text style={styles.avisoDescription} numberOfLines={2}>
+            {item.description}
+          </Text>
+
+          <View style={styles.avisoFooter}>
+            <Text style={styles.avisoCategory}>{item.category}</Text>
+            <Text style={styles.avisoDate}>{item.date}</Text>
+          </View>
+        </View>
+
+        {isRead && <Text style={styles.readCheck}>✓</Text>}
+      </TouchableOpacity>
     );
-    setComunicados(updated);
-    await AsyncStorage.setItem("comunicados:list", JSON.stringify(updated));
-  };
-
-  const getCategoryColor = (categoria: string) => {
-    switch (categoria) {
-      case "desafio":
-        return "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800";
-      case "recompensa":
-        return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
-      case "saude":
-        return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
-      default:
-        return "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800";
-    }
-  };
-
-  const getCategoryLabel = (categoria: string) => {
-    switch (categoria) {
-      case "desafio":
-        return "🎯 Desafio";
-      case "recompensa":
-        return "🎁 Recompensa";
-      case "saude":
-        return "❤️ Saúde";
-      default:
-        return "📢 Geral";
-    }
   };
 
   return (
-    <ScreenContainer>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="gap-6 p-6">
-          <View>
-            <Text className="text-2xl font-bold text-foreground">Avisos 📢</Text>
-            <Text className="text-sm text-muted mt-1">
-              {filtrados.length} mensagem{filtrados.length !== 1 ? "s" : ""}
+    <ScreenContainer className="bg-white" edges={["top", "left", "right"]}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>📢 Avisos</Text>
+          <Text style={styles.subtitle}>
+            {unreadCount > 0 ? `${unreadCount} não lido(s)` : "Tudo lido"}
+          </Text>
+        </View>
+
+        {/* Filtros */}
+        <View style={styles.filtersContainer}>
+          <TouchableOpacity
+            style={[styles.filterBtn, activeFilter === "todos" && styles.filterBtnActive]}
+            onPress={() => setActiveFilter("todos")}
+          >
+            <Text
+              style={[
+                styles.filterLabel,
+                activeFilter === "todos" && styles.filterLabelActive,
+              ]}
+            >
+              Todos ({avisos.length})
             </Text>
-          </View>
+          </TouchableOpacity>
 
-          <View className="flex-row gap-2 flex-wrap">
-            {["todos", "geral", "desafio", "recompensa", "saude"].map((f) => (
+          <TouchableOpacity
+            style={[styles.filterBtn, activeFilter === "urgente" && styles.filterBtnActive]}
+            onPress={() => setActiveFilter("urgente")}
+          >
+            <Text
+              style={[
+                styles.filterLabel,
+                activeFilter === "urgente" && styles.filterLabelActive,
+              ]}
+            >
+              Urgente ({avisos.filter((a) => a.isUrgent).length})
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.filterBtn,
+              activeFilter === "informativo" && styles.filterBtnActive,
+            ]}
+            onPress={() => setActiveFilter("informativo")}
+          >
+            <Text
+              style={[
+                styles.filterLabel,
+                activeFilter === "informativo" && styles.filterLabelActive,
+              ]}
+            >
+              Informativo ({avisos.filter((a) => !a.isUrgent).length})
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Lista de Avisos */}
+        <View style={styles.listContainer}>
+          {filteredAvisos.length > 0 ? (
+            filteredAvisos.map((item) => (
               <TouchableOpacity
-                key={f}
-                onPress={() => setFiltro(f)}
-                className={`px-4 py-2 rounded-full ${
-                  filtro === f
-                    ? "bg-primary"
-                    : "bg-surface border border-border"
-                }`}
+                key={item.id}
+                style={[styles.avisoCard, readIds.includes(item.id) && styles.avisoCardRead]}
+                onPress={() => !readIds.includes(item.id) && markAsRead(item.id)}
               >
-                <Text
-                  className={`text-sm font-semibold ${
-                    filtro === f ? "text-white" : "text-foreground"
-                  }`}
-                >
-                  {f === "todos"
-                    ? "Todos"
-                    : f === "geral"
-                    ? "Geral"
-                    : f === "desafio"
-                    ? "Desafios"
-                    : f === "recompensa"
-                    ? "Recompensas"
-                    : "Saúde"}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                {!readIds.includes(item.id) && <View style={styles.unreadDot} />}
 
-          <View className="gap-3">
-            {filtrados.length > 0 ? (
-              filtrados.map((item) => (
-                <TouchableOpacity
-                  key={item.id}
-                  onPress={() => marcarComoLido(item.id)}
-                  className={`rounded-lg p-4 border-2 ${getCategoryColor(
-                    item.categoria
-                  )}`}
-                >
-                  <View className="flex-row items-start justify-between gap-3">
-                    <View className="flex-1">
-                      <View className="flex-row items-center gap-2 mb-2">
-                        <Text className="text-sm font-semibold text-foreground">
-                          {getCategoryLabel(item.categoria)}
-                        </Text>
-                        {!item.lido && (
-                          <View className="w-2 h-2 bg-primary rounded-full" />
-                        )}
-                      </View>
-                      <Text className="text-base font-bold text-foreground">
-                        {item.titulo}
-                      </Text>
-                      <Text className="text-sm text-muted mt-1">
-                        {item.descricao}
-                      </Text>
-                      <Text className="text-xs text-muted mt-2">
-                        {item.data}
-                      </Text>
-                    </View>
-                    <Text className="text-xl">
-                      {item.lido ? "✓" : "●"}
+                <View style={styles.avisoContent}>
+                  <View style={styles.avisoHeader}>
+                    <Text
+                      style={[
+                        styles.avisoTitle,
+                        !readIds.includes(item.id) && styles.avisoTitleBold,
+                      ]}
+                    >
+                      {item.title}
                     </Text>
+                    {item.isUrgent && <View style={styles.urgentBadge} />}
                   </View>
-                </TouchableOpacity>
-              ))
-            ) : (
-              <View className="items-center justify-center py-12">
-                <Text className="text-4xl mb-2">📭</Text>
-                <Text className="text-base text-muted">
-                  Nenhum aviso nesta categoria
-                </Text>
-              </View>
-            )}
-          </View>
+
+                  <Text style={styles.avisoDescription} numberOfLines={2}>
+                    {item.description}
+                  </Text>
+
+                  <View style={styles.avisoFooter}>
+                    <Text style={styles.avisoCategory}>{item.category}</Text>
+                    <Text style={styles.avisoDate}>{item.date}</Text>
+                  </View>
+                </View>
+
+                {readIds.includes(item.id) && <Text style={styles.readCheck}>✓</Text>}
+              </TouchableOpacity>
+            ))
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyEmoji}>📭</Text>
+              <Text style={styles.emptyText}>Nenhum aviso nesta categoria</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </ScreenContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#1B8A4C",
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#666",
+  },
+  filtersContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  filterBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: "#F0F0F0",
+    alignItems: "center",
+  },
+  filterBtnActive: {
+    backgroundColor: "#1B8A4C",
+  },
+  filterLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#666",
+  },
+  filterLabelActive: {
+    color: "#FFFFFF",
+  },
+  listContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
+  },
+  avisoCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    padding: 12,
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "flex-start",
+  },
+  avisoCardRead: {
+    backgroundColor: "#F9F9F9",
+    borderColor: "#F0F0F0",
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#1B8A4C",
+    marginTop: 6,
+    flexShrink: 0,
+  },
+  avisoContent: {
+    flex: 1,
+    gap: 6,
+  },
+  avisoHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: 8,
+  },
+  avisoTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    flex: 1,
+  },
+  avisoTitleBold: {
+    fontWeight: "700",
+    color: "#1B8A4C",
+  },
+  urgentBadge: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#DC2626",
+    flexShrink: 0,
+    marginTop: 4,
+  },
+  avisoDescription: {
+    fontSize: 12,
+    color: "#666",
+    lineHeight: 16,
+  },
+  avisoFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 4,
+  },
+  avisoCategory: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#1B8A4C",
+    backgroundColor: "#E8F5EE",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    textTransform: "capitalize",
+  },
+  avisoDate: {
+    fontSize: 10,
+    color: "#999",
+  },
+  readCheck: {
+    fontSize: 16,
+    color: "#1B8A4C",
+    fontWeight: "700",
+    marginTop: 2,
+  },
+  emptyContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+    gap: 8,
+  },
+  emptyEmoji: {
+    fontSize: 48,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "#999",
+    fontWeight: "500",
+  },
+});

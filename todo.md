@@ -3416,3 +3416,82 @@ Adicionar guia sonoro (Text-to-Speech) para instruir funcionários durante exerc
 - [ ] Notificações push para desafios
 - [ ] Recursos de saúde mental (CAPS, CVV, psicólogos)
 - [ ] Integração com wearables
+
+
+---
+
+## FASE 15: Notificações Push em Tempo Real
+- [ ] Configurar expo-notifications
+- [ ] Implementar hook useNotificationScheduler
+- [ ] Lembretes de check-in diário (8h, 12h, 16h)
+- [ ] Lembretes de hidratação (a cada 2 horas)
+- [ ] Alertas para pressão elevada
+- [ ] Notificações ao desbloquear medalhas
+- [ ] Notificações para desafios ativos
+- [ ] Tela de configuração de notificações
+- [ ] Persistência de preferências
+
+---
+
+## FASE 16: Modo Escuro (Dark Mode)
+- [ ] Implementar ThemeProvider com suporte a dark mode
+- [ ] Atualizar paleta de cores para dark mode
+- [ ] Adicionar toggle de tema no Perfil
+- [ ] Persistir preferência de tema em AsyncStorage
+- [ ] Testar em todas as telas
+- [ ] Validar contraste WCAG AA em dark mode
+
+---
+
+## FASE 17: Suporte a Múltiplos Idiomas (i18n)
+- [ ] Instalar i18next e react-i18next
+- [ ] Criar arquivos de tradução (PT-BR, EN, ES)
+- [ ] Traduzir todas as strings do app
+- [ ] Adicionar seletor de idioma no Perfil
+- [ ] Persistir idioma selecionado
+- [ ] Testar em todas as telas
+- [ ] Suporte a RTL (árabe, hebraico) - opcional
+
+---
+
+## FASE 18: Sincronização Firebase Completa
+- [ ] Configurar Firebase (Firestore, RTDB, Storage)
+- [ ] Criar schema de dados no Firestore
+- [ ] Implementar hook useFirebaseSync
+- [ ] Sincronizar check-ins
+- [ ] Sincronizar hidratação
+- [ ] Sincronizar pressão arterial
+- [ ] Sincronizar fotos de desafios (Storage)
+- [ ] Sincronizar pontos e recompensas
+- [ ] Implementar offline-first com fallback
+- [ ] Testar sincronização bidirecional
+- [ ] Adicionar regras de segurança do Firestore
+
+---
+
+## FASE 19: Dashboard Gerencial Web Avançado
+- [ ] Criar interface web do admin panel
+- [ ] Gráficos de evolução mensal (Hidratação, Pressão, Pontos)
+- [ ] Filtro por período (semana/mês/personalizado)
+- [ ] Filtro por turno (Diurno/Noturno)
+- [ ] Drill-down de queixas por semana
+- [ ] Drill-down de desafios ativos
+- [ ] Alertas automáticos (3+ mesma queixa)
+- [ ] Geração de relatórios PDF
+- [ ] Envio automático de relatórios por email
+- [ ] Exportação de dados (CSV/Excel)
+- [ ] Dashboard responsivo
+
+---
+
+## FASE 20: Documentação Final e Entrega
+- [ ] Atualizar README.md
+- [ ] Criar guia de uso para funcionários
+- [ ] Criar manual técnico para desenvolvedores
+- [ ] Criar guia de deployment
+- [ ] Criar guia de troubleshooting
+- [ ] Documentar API tRPC
+- [ ] Documentar schema Firebase
+- [ ] Criar vídeos tutoriais (opcional)
+- [ ] Preparar apresentação final
+- [ ] Entregar ao cliente

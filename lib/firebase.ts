@@ -174,3 +174,234 @@ export function listenToAllEmployees(
 }
 
 export { database };
+
+/**
+ * Sincronizar dados de check-in
+ */
+export async function syncCheckIn(
+  matricula: string,
+  date: string,
+  status: 'bem' | 'dor_leve' | 'dor_forte',
+  points: number
+): Promise<void> {
+  try {
+    await saveToFirebase(matricula, `checkIns/${date}`, {
+      date,
+      status,
+      points,
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    console.error('[Firebase] Error syncing check-in:', error);
+  }
+}
+
+/**
+ * Sincronizar dados de hidratação
+ */
+export async function syncHydration(
+  matricula: string,
+  date: string,
+  cups: number,
+  total: number,
+  goal: number
+): Promise<void> {
+  try {
+    await saveToFirebase(matricula, `hydration/${date}`, {
+      date,
+      cups,
+      total,
+      goal,
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    console.error('[Firebase] Error syncing hydration:', error);
+  }
+}
+
+/**
+ * Sincronizar dados de pressão arterial
+ */
+export async function syncPressure(
+  matricula: string,
+  systolic: number,
+  diastolic: number,
+  status: 'normal' | 'elevada' | 'alta'
+): Promise<void> {
+  try {
+    await pushToFirebase(matricula, 'pressure', {
+      systolic,
+      diastolic,
+      status,
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    console.error('[Firebase] Error syncing pressure:', error);
+  }
+}
+
+/**
+ * Sincronizar sintomas
+ */
+export async function syncSymptoms(
+  matricula: string,
+  date: string,
+  symptoms: string[]
+): Promise<void> {
+  try {
+    await saveToFirebase(matricula, `symptoms/${date}`, {
+      date,
+      symptoms,
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    console.error('[Firebase] Error syncing symptoms:', error);
+  }
+}
+
+/**
+ * Sincronizar pontos e recompensas
+ */
+export async function syncPoints(
+  matricula: string,
+  points: number,
+  level: number
+): Promise<void> {
+  try {
+    await saveToFirebase(matricula, 'profile/points', {
+      points,
+      level,
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    console.error('[Firebase] Error syncing points:', error);
+  }
+}
+
+/**
+ * Sincronizar resgates de recompensas
+ */
+export async function syncRedemption(
+  matricula: string,
+  rewardName: string,
+  pointsSpent: number
+): Promise<void> {
+  try {
+    await pushToFirebase(matricula, 'redemptions', {
+      reward: rewardName,
+      pointsSpent,
+      timestamp: Date.now(),
+    });
+  } catch (error) {
+    console.error('[Firebase] Error syncing redemption:', error);
+  }
+}
+
+/**
+ * Obter histórico de check-ins
+ */
+export async function getCheckInHistory(
+  matricula: string,
+  days: number = 30
+): Promise<any[]> {
+  try {
+    const checkIns = await getFromFirebase(matricula, 'checkIns');
+    if (!checkIns) return [];
+    
+    const now = Date.now();
+    const thirtyDaysAgo = now - days * 24 * 60 * 60 * 1000;
+    
+    return Object.values(checkIns).filter((checkIn: any) => {
+      return checkIn.timestamp >= thirtyDaysAgo;
+    });
+  } catch (error) {
+    console.error('[Firebase] Error getting check-in history:', error);
+    return [];
+  }
+}
+
+/**
+ * Obter histórico de pressão
+ */
+export async function getPressureHistory(
+  matricula: string,
+  days: number = 30
+): Promise<any[]> {
+  try {
+    const pressures = await getFromFirebase(matricula, 'pressure');
+    if (!pressures) return [];
+    
+    const now = Date.now();
+    const thirtyDaysAgo = now - days * 24 * 60 * 60 * 1000;
+    
+    return Object.values(pressures).filter((pressure: any) => {
+      return pressure.timestamp >= thirtyDaysAgo;
+    });
+  } catch (error) {
+    console.error('[Firebase] Error getting pressure history:', error);
+    return [];
+  }
+}
+
+/**
+ * Obter histórico de sintomas
+ */
+export async function getSymptomsHistory(
+  matricula: string,
+  days: number = 30
+): Promise<any[]> {
+  try {
+    const symptoms = await getFromFirebase(matricula, 'symptoms');
+    if (!symptoms) return [];
+    
+    const now = Date.now();
+    const thirtyDaysAgo = now - days * 24 * 60 * 60 * 1000;
+    
+    return Object.values(symptoms).filter((symptom: any) => {
+      return symptom.timestamp >= thirtyDaysAgo;
+    });
+  } catch (error) {
+    console.error('[Firebase] Error getting symptoms history:', error);
+    return [];
+  }
+}
+
+/**
+ * Obter histórico de hidratação
+ */
+export async function getHydrationHistory(
+  matricula: string,
+  days: number = 30
+): Promise<any[]> {
+  try {
+    const hydration = await getFromFirebase(matricula, 'hydration');
+    if (!hydration) return [];
+    
+    const now = Date.now();
+    const thirtyDaysAgo = now - days * 24 * 60 * 60 * 1000;
+    
+    return Object.values(hydration).filter((h: any) => {
+      return h.timestamp >= thirtyDaysAgo;
+    });
+  } catch (error) {
+    console.error('[Firebase] Error getting hydration history:', error);
+    return [];
+  }
+}
+
+/**
+ * Obter histórico de resgates
+ */
+export async function getRedemptionHistory(
+  matricula: string
+): Promise<any[]> {
+  try {
+    const redemptions = await getFromFirebase(matricula, 'redemptions');
+    if (!redemptions) return [];
+    
+    return Object.values(redemptions);
+  } catch (error) {
+    console.error('[Firebase] Error getting redemption history:', error);
+    return [];
+  }
+}

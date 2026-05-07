@@ -1,7 +1,8 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { saveToFirebase, pushToFirebase } from '@/lib/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOfflineSync } from './use-offline-sync';
+import NetInfo from '@react-native-community/netinfo';
 
 /**
  * Hook para sincronizar dados locais com Firebase
@@ -17,8 +18,116 @@ interface SyncOptions {
   enabled?: boolean;
 }
 
+interface SyncQueue {
+  type: 'checkIn' | 'hydration' | 'pressure' | 'symptoms' | 'points' | 'redemption';
+  data: any;
+  timestamp: number;
+}
+
 export function useFirebaseSync({ matricula, enabled = true }: SyncOptions) {
   const { syncSave, syncPush } = useOfflineSync();
+  const [isOnline, setIsOnline] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const syncQueueRef = useRef<SyncQueue[]>([]);
+
+  // Monitorar conexão de internet
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      const online = state.isConnected && state.isInternetReachable;
+      setIsOnline(online ?? false);
+
+      // Se voltou online, sincronizar fila
+      if (online) {
+        processSyncQueue();
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Carregar fila de sincronização ao iniciar
+  useEffect(() => {
+    loadSyncQueue();
+  }, []);
+
+  const loadSyncQueue = async () => {
+    try {
+      const saved = await AsyncStorage.getItem(`sync:queue:${matricula}`);
+      if (saved) {
+        syncQueueRef.current = JSON.parse(saved);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar fila de sincronização:', error);
+    }
+  };
+
+  const saveSyncQueue = async () => {
+    try {
+      await AsyncStorage.setItem(
+        `sync:queue:${matricula}`,
+        JSON.stringify(syncQueueRef.current)
+      );
+    } catch (error) {
+      console.error('Erro ao salvar fila de sincronização:', error);
+    }
+  };
+
+  const addToQueue = async (item: SyncQueue) => {
+    syncQueueRef.current.push(item);
+    await saveSyncQueue();
+
+    // Se online, processar imediatamente
+    if (isOnline) {
+      processSyncQueue();
+    }
+  };
+
+  const processSyncQueue = async () => {
+    if (isSyncing || syncQueueRef.current.length === 0 || !isOnline) {
+      return;
+    }
+
+    setIsSyncing(true);
+
+    try {
+      while (syncQueueRef.current.length > 0) {
+        const item = syncQueueRef.current[0];
+
+        try {
+          switch (item.type) {
+            case 'checkIn':
+              await syncSave(matricula, `checkins/${item.data.date}`, item.data);
+              break;
+            case 'hydration':
+              await syncSave(matricula, `hydration/${item.data.date}`, item.data);
+              break;
+            case 'pressure':
+              await syncPush(matricula, 'pressure', item.data);
+              break;
+            case 'symptoms':
+              await syncSave(matricula, `complaints/${item.data.timestamp}`, item.data);
+              break;
+            case 'points':
+              await syncSave(matricula, 'profile/points', item.data);
+              break;
+            case 'redemption':
+              await syncPush(matricula, 'redemptions', item.data);
+              break;
+          }
+
+          // Remover da fila após sucesso
+          syncQueueRef.current.shift();
+          await saveSyncQueue();
+        } catch (error) {
+          console.error('Erro ao sincronizar item:', error);
+          // Parar de processar se houver erro
+          break;
+        }
+      }
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   /**
    * Sincronizar perfil do funcionário
@@ -144,6 +253,11 @@ export function useFirebaseSync({ matricula, enabled = true }: SyncOptions) {
     syncBloodPressure,
     syncSymptoms,
     syncCheckIn,
-    syncPushToken
+    syncPushToken,
+    // Status de sincronização
+    isOnline,
+    isSyncing,
+    queueLength: syncQueueRef.current.length,
+    processSyncQueue,
   };
 }

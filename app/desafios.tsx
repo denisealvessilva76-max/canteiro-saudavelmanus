@@ -144,7 +144,7 @@ export default function DesafiosScreen() {
             setPhotos(updatedPhotos);
 
             if (Platform.OS !== "web") {
-              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Light);
+              await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
             }
           } catch (error) {
             Alert.alert("Erro", "Não foi possível deletar a foto");

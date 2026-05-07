@@ -80,7 +80,7 @@ export default function ComunicadosScreen() {
       setReadIds(newReadIds);
 
       if (Platform.OS !== "web") {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Light);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch (error) {
       console.error("Erro ao marcar como lido:", error);

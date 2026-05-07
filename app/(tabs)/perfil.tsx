@@ -73,7 +73,7 @@ export default function PerfilScreen() {
       setShowAvatarModal(false);
 
       if (Platform.OS !== "web") {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Light);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch (error) {
       console.error("Erro ao salvar avatar:", error);

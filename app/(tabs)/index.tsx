@@ -83,7 +83,15 @@ export default function HomeScreen() {
   };
 
   const navigateTo = (screen: string) => {
-    router.push(`/(tabs)/${screen}`);
+    if (screen === 'saude') {
+      router.push('/(tabs)/saude');
+    } else if (screen === 'ergonomia') {
+      router.push('/(tabs)/ergonomia');
+    } else if (screen === 'comunicados') {
+      router.push('/(tabs)/comunicados');
+    } else if (screen === 'perfil') {
+      router.push('/(tabs)/perfil');
+    }
   };
 
   if (loading) {

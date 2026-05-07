@@ -27,7 +27,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const isLoginPage = pathname === "/login" || segments[0] === "login";
     const isCadastroPage = pathname === "/cadastro" || segments[0] === "cadastro";
     const isTutorialPage = pathname === "/tutorial" || segments[0] === "tutorial";
-    const isOnboardingPage = pathname === "/onboarding" || segments[0] === "onboarding" || pathname === "/";
+    const isOnboardingPage = pathname === "/" || pathname === "/index";
     const isAdminPage = segments[0]?.startsWith("admin");
     const isPublicPage = isLoginPage || isCadastroPage || isTutorialPage || isOnboardingPage || isAdminPage;
 
@@ -75,7 +75,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isLoginPage = pathname === "/login" || segments[0] === "login";
   const isCadastroPage = pathname === "/cadastro" || segments[0] === "cadastro";
   const isTutorialPage = pathname === "/tutorial" || segments[0] === "tutorial";
-  const isOnboardingPage = pathname === "/onboarding" || segments[0] === "onboarding" || pathname === "/";
+  const isOnboardingPage = pathname === "/" || pathname === "/index";
   const isAdminPage = segments[0]?.startsWith("admin");
   const isPublicPage = isLoginPage || isCadastroPage || isTutorialPage || isOnboardingPage || isAdminPage;
 

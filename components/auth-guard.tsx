@@ -36,9 +36,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (loading || checkingLocal) return;
 
     const isLoginPage = pathname === "/login" || segments[0] === "login";
-    const isOnboardingPage = pathname === "/onboarding" || segments[0] === "onboarding";
+    const isTutorialPage = pathname === "/tutorial" || segments[0] === "tutorial";
     const isAdminPage = segments[0]?.startsWith("admin");
-    const isPublicPage = isLoginPage || isOnboardingPage || isAdminPage;
+    const isPublicPage = isLoginPage || isTutorialPage || isAdminPage;
 
     const hasUser = user || localUser;
 

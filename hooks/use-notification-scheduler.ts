@@ -24,17 +24,17 @@ const DEFAULT_CONFIG: NotificationConfig = {
 };
 
 export function useNotificationScheduler() {
-  const notificationRef = useRef<NodeJS.Timer | null>(null);
-  const hydrationTimerRef = useRef<NodeJS.Timer | null>(null);
+  const notificationRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hydrationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     initializeNotificationScheduler();
     return () => {
       if (notificationRef.current) {
-        clearInterval(notificationRef.current as NodeJS.Timeout);
+        clearInterval(notificationRef.current);
       }
       if (hydrationTimerRef.current) {
-        clearInterval(hydrationTimerRef.current as NodeJS.Timeout);
+        clearInterval(hydrationTimerRef.current);
       }
     };
   }, []);
@@ -119,7 +119,7 @@ export function useNotificationScheduler() {
     try {
       // Cancelar timer anterior se existir
       if (hydrationTimerRef.current) {
-        clearInterval(hydrationTimerRef.current as NodeJS.Timeout);
+        clearInterval(hydrationTimerRef.current);
       }
 
       // Agendar primeiro lembrete em 1 hora

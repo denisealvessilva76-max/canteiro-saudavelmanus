@@ -232,7 +232,7 @@ function RespirationGuide() {
   useEffect(() => {
     if (!isActive) return;
 
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
     if (phase === "ready") {
       timer = setTimeout(() => {

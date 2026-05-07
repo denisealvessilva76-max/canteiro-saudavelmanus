@@ -149,7 +149,7 @@ export default function SaudeScreen() {
       setSelectedSymptoms(newSymptoms);
 
       if (Platform.OS !== "web") {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Light);
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch (error) {
       console.error("Erro ao salvar sintomas:", error);

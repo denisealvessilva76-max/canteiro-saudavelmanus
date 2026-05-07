@@ -81,7 +81,7 @@ export default function SaudeMentalScreen() {
   const [isBreathing, setIsBreathing] = useState(false);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval> | undefined;
 
     if (isBreathing) {
       interval = setInterval(() => {

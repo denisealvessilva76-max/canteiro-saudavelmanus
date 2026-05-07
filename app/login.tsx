@@ -38,14 +38,12 @@ export default function LoginScreen() {
         return;
       }
 
-      // Usar useAuth para fazer login corretamente - salva em localStorage/SecureStore
-      await authLogin(matricula, nome);
-      
-      // Aguardar um pouco para o estado ser atualizado
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Salvar credenciais em AsyncStorage
+      await AsyncStorage.setItem("employee:matricula", matricula);
+      await AsyncStorage.setItem("employee:nome", nome);
+      await AsyncStorage.setItem("isLoggedIn", "true");
       
       await AsyncStorage.setItem("lastLogin", new Date().toISOString());
-      await AsyncStorage.setItem("isLoggedIn", "true");
 
       if (Platform.OS !== "web") {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

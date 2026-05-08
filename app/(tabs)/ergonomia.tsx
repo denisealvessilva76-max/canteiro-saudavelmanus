@@ -1,6 +1,8 @@
 import { View, Text, TouchableOpacity, ScrollView, Linking, StyleSheet, Animated } from "react-native";
 import { useState, useRef, useEffect } from "react";
 import { ScreenContainer } from "@/components/screen-container";
+import { StretchingGuide } from "@/components/stretching-guide";
+import { GuidedBreathing } from "@/components/guided-breathing";
 
 const alongamentos = [
   {
@@ -86,6 +88,8 @@ const posturas = [
 export default function ErgonomiaScreen() {
   const [activeTab, setActiveTab] = useState<"alongamentos" | "posturas" | "respiracao">("alongamentos");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [showStretchingGuide, setShowStretchingGuide] = useState(false);
+  const [showBreathingGuide, setShowBreathingGuide] = useState(false);
 
   const handleOpenYoutube = async (url: string) => {
     try {
@@ -166,12 +170,20 @@ export default function ErgonomiaScreen() {
                         <Text style={styles.benefitLabel}>✅ Benefício:</Text>
                         <Text style={styles.benefitText}>{item.beneficio}</Text>
                       </View>
-                      <TouchableOpacity
-                        style={styles.youtubeBtn}
-                        onPress={() => handleOpenYoutube(item.youtube)}
-                      >
-                        <Text style={styles.youtubeBtnText}>▶ Ver no YouTube</Text>
-                      </TouchableOpacity>
+                      <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                          style={styles.youtubeBtn}
+                          onPress={() => handleOpenYoutube(item.youtube)}
+                        >
+                          <Text style={styles.youtubeBtnText}>▶ Ver no YouTube</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.narrationBtn}
+                          onPress={() => setShowStretchingGuide(true)}
+                        >
+                          <Text style={styles.narrationBtnText}>🔊 Passo a Passo</Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -214,10 +226,34 @@ export default function ErgonomiaScreen() {
                 <Text style={styles.tipText}>💡 Respiração 4-7-8 reduz estresse e ansiedade</Text>
               </View>
 
-              <RespirationGuide />
+              <TouchableOpacity
+                style={styles.respiracaoCard}
+                onPress={() => setShowBreathingGuide(true)}
+              >
+                <Text style={styles.respiracaoEmoji}>🫁</Text>
+                <View style={styles.respiracaoInfo}>
+                  <Text style={styles.respiracaoTitle}>Respiração Guiada 4-7-8</Text>
+                  <Text style={styles.respiracaoDesc}>Com narração de voz suave e música de fundo</Text>
+                </View>
+                <Text style={styles.expandIcon}>▶</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
+
+        {/* Modal Stretching Guide */}
+        {showStretchingGuide && (
+          <View style={styles.modalOverlay}>
+            <StretchingGuide onClose={() => setShowStretchingGuide(false)} />
+          </View>
+        )}
+
+        {/* Modal Breathing Guide */}
+        {showBreathingGuide && (
+          <View style={styles.modalOverlay}>
+            <GuidedBreathing onClose={() => setShowBreathingGuide(false)} />
+          </View>
+        )}
       </ScrollView>
     </ScreenContainer>
   );
@@ -470,13 +506,31 @@ const styles = StyleSheet.create({
     color: "#1B8A4C",
     marginTop: 2,
   },
+  buttonContainer: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 12,
+  },
   youtubeBtn: {
+    flex: 1,
     backgroundColor: "#E53935",
     borderRadius: 8,
     paddingVertical: 10,
     alignItems: "center",
   },
   youtubeBtnText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 13,
+  },
+  narrationBtn: {
+    flex: 1,
+    backgroundColor: "#8B5CF6",
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  narrationBtnText: {
     color: "#FFFFFF",
     fontWeight: "600",
     fontSize: 13,
@@ -605,5 +659,41 @@ const styles = StyleSheet.create({
     color: "#666",
     flex: 1,
     paddingTop: 4,
+  },
+  respiracaoCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F0F9FF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: "#3B82F6",
+  },
+  respiracaoEmoji: {
+    fontSize: 32,
+    marginRight: 12,
+  },
+  respiracaoInfo: {
+    flex: 1,
+  },
+  respiracaoTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1F2937",
+    marginBottom: 4,
+  },
+  respiracaoDesc: {
+    fontSize: 13,
+    color: "#6B7280",
+  },
+  modalOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 1000,
   },
 });

@@ -3495,3 +3495,65 @@ Adicionar guia sonoro (Text-to-Speech) para instruir funcionários durante exerc
 - [ ] Criar vídeos tutoriais (opcional)
 - [ ] Preparar apresentação final
 - [ ] Entregar ao cliente
+
+
+---
+
+## FASE 19: Alongamentos com Passo a Passo + Narração de Áudio
+
+- [ ] Criar componente StepByStepGuide com imagens e narração
+- [ ] Gerar áudio de narração para cada alongamento (voz natural)
+- [ ] Implementar player de áudio com controles (play, pause, stop)
+- [ ] Adicionar opção de YouTube + Passo a Passo na tela de Alongamentos
+- [ ] Testar sincronização de áudio e imagens
+
+## FASE 20: Respiração Guiada 4-7-8 com Voz Suave e Música
+
+- [ ] Gerar áudio de respiração guiada (voz suave, calma)
+- [ ] Implementar sequência: "Prepare-se" → 4s inspirar → 7s prender → 8s expirar
+- [ ] Adicionar contador visual (segundos)
+- [ ] Integrar música de fundo suave
+- [ ] Implementar 4 repetições automáticas
+- [ ] Adicionar mensagem final: "Muito bem, você conseguiu, tenha um ótimo dia"
+- [ ] Testar em dispositivo real
+
+## FASE 21: Sistema Completo de Desafios (Água, Passos, Alimentação)
+
+- [ ] Criar modelo de dados para desafios
+- [ ] Implementar desafio de hidratação (meta diária)
+- [ ] Implementar desafio de passos (usando pedômetro)
+- [ ] Implementar desafio de alimentação (registro de refeições)
+- [ ] Adicionar campo de dificuldades (texto)
+- [ ] Integrar com pontos e recompensas
+
+## FASE 22: Upload de Fotos e Relatório de Dificuldades
+
+- [ ] Implementar câmera/galeria para upload de fotos
+- [ ] Adicionar campo de dificuldades (textarea)
+- [ ] Salvar fotos em Firebase Storage
+- [ ] Sincronizar dados com Admin Panel
+- [ ] Validar tamanho e formato de fotos
+
+## FASE 23: Integração de Desafios no Admin Panel
+
+- [ ] Criar tela de Desafios no Admin Panel
+- [ ] Exibir desafios ativos por funcionário
+- [ ] Mostrar fotos enviadas
+- [ ] Exibir relatório de dificuldades
+- [ ] Filtrar por período e funcionário
+- [ ] Implementar ações (aprovar, comentar, rejeitar)
+
+## FASE 24: Testes e Validação
+
+- [ ] Testar fluxo completo de desafios
+- [ ] Validar sincronização de fotos
+- [ ] Testar áudio em diferentes dispositivos
+- [ ] Validar no Admin Panel
+- [ ] Teste de performance com múltiplos usuários
+
+## FASE 25: Documentação Final
+
+- [ ] Documentar fluxo de desafios
+- [ ] Criar guia de uso para funcionários
+- [ ] Criar guia de administração
+- [ ] Preparar para produção

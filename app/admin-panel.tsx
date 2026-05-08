@@ -243,7 +243,7 @@ export default function AdminPanelScreen() {
             {[
               { title: "Hidratação Diária", participants: 18, progress: 75 },
               { title: "Atividade Física", participants: 12, progress: 60 },
-              { title: "Pesagem Semanal", participants: 8, progress: 40 },
+              { title: "Alimentação Saudável", participants: 15, progress: 55 },
             ].map((challenge, i) => (
               <View key={i} style={styles.challengeCard}>
                 <View style={styles.challengeHeader}>
@@ -254,6 +254,37 @@ export default function AdminPanelScreen() {
                   <View style={[styles.progressFill, { width: `${challenge.progress}%` }]} />
                 </View>
                 <Text style={styles.progressText}>{challenge.progress}% completo</Text>
+              </View>
+            ))}
+
+            <Text style={[styles.sectionTitle, { marginTop: 20 }]}>📋 Submissões Pendentes</Text>
+            {[
+              { name: "João Silva", challenge: "Hidratação", difficulty: "Esqueci de beber água", status: "pending", photos: 2 },
+              { name: "Maria Santos", challenge: "Atividade Física", difficulty: "Cansaço no fim do dia", status: "pending", photos: 1 },
+            ].map((submission, i) => (
+              <View key={i} style={styles.submissionCard}>
+                <View style={styles.submissionHeader}>
+                  <View>
+                    <Text style={styles.submissionName}>{submission.name}</Text>
+                    <Text style={styles.submissionChallenge}>{submission.challenge}</Text>
+                  </View>
+                  <View style={styles.statusBadge}>
+                    <Text style={styles.statusBadgeText}>Pendente</Text>
+                  </View>
+                </View>
+                <View style={styles.submissionContent}>
+                  <Text style={styles.difficultyLabel}>Dificuldade:</Text>
+                  <Text style={styles.difficultyText}>{submission.difficulty}</Text>
+                  <Text style={styles.photoCount}>📸 {submission.photos} foto{submission.photos > 1 ? 's' : ''}</Text>
+                </View>
+                <View style={styles.submissionActions}>
+                  <TouchableOpacity style={styles.approveBtn}>
+                    <Text style={styles.approveBtnText}>✓ Aprovar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.rejectBtn}>
+                    <Text style={styles.rejectBtnText}>✕ Rejeitar</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             ))}
           </View>
@@ -645,5 +676,88 @@ const styles = StyleSheet.create({
   communicadoDate: {
     fontSize: 11,
     color: "#999",
+  },
+  submissionCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderLeftWidth: 4,
+    borderLeftColor: "#F59E0B",
+    padding: 12,
+    gap: 12,
+    marginBottom: 12,
+  },
+  submissionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  submissionName: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#1B8A4C",
+  },
+  submissionChallenge: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 2,
+  },
+  statusBadge: {
+    backgroundColor: "#FEF3C7",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#F59E0B",
+  },
+  submissionContent: {
+    gap: 6,
+  },
+  difficultyLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#1B8A4C",
+  },
+  difficultyText: {
+    fontSize: 12,
+    color: "#666",
+    fontStyle: "italic",
+  },
+  photoCount: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 4,
+  },
+  submissionActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  approveBtn: {
+    flex: 1,
+    backgroundColor: "#10B981",
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+  approveBtnText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 12,
+  },
+  rejectBtn: {
+    flex: 1,
+    backgroundColor: "#EF4444",
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+  rejectBtnText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 12,
   },
 });

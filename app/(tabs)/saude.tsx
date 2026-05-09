@@ -78,6 +78,7 @@ export default function SaudeScreen() {
     const newIntake = todayIntake + CUP_SIZE;
     
     try {
+      // 1. Salvar localmente
       await AsyncStorage.setItem("today:hydration", newIntake.toString());
       
       const newHistory = [
@@ -91,6 +92,17 @@ export default function SaudeScreen() {
       
       await AsyncStorage.setItem("hydration:history", JSON.stringify(newHistory));
       
+      // 2. Sincronizar com Firebase
+      if (profile?.matricula) {
+        try {
+          const { syncHydration } = await import('@/lib/firebase-sync-simple');
+          await syncHydration(profile.matricula, newIntake, newHistory);
+          console.log('[Saude] Hidratação sincronizada com Firebase');
+        } catch (firebaseError) {
+          console.warn('[Saude] Erro ao sincronizar com Firebase:', firebaseError);
+        }
+      }
+      
       setTodayIntake(newIntake);
       setIntakeHistory(newHistory);
 
@@ -103,6 +115,7 @@ export default function SaudeScreen() {
       }
     } catch (error) {
       console.error("Erro ao adicionar água:", error);
+      Alert.alert("Erro", "Não foi possível registrar a água");
     }
   };
 
@@ -122,6 +135,17 @@ export default function SaudeScreen() {
 
       const newHistory = [...pressureHistory, newPressure];
       await AsyncStorage.setItem("pressure:history", JSON.stringify(newHistory));
+      
+      // Sincronizar com Firebase
+      if (profile?.matricula) {
+        try {
+          const { syncPressure } = await import('@/lib/firebase-sync-simple');
+          await syncPressure(profile.matricula, newHistory, selectedSymptoms);
+          console.log('[Saude] Pressão sincronizada com Firebase');
+        } catch (firebaseError) {
+          console.warn('[Saude] Erro ao sincronizar com Firebase:', firebaseError);
+        }
+      }
       
       setPressureHistory(newHistory);
       setSystolic("");

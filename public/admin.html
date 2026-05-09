@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canteiro Saudável - Painel Admin</title>
+    <title>Painel Administrativo - Canteiro Saudável</title>
     <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-storage-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -15,306 +15,534 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
             min-height: 100vh;
+            padding: 0;
+        }
+
+        .login-container {
+            background: linear-gradient(135deg, #1B8A4C 0%, #27AE60 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        header {
+        .login-box {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 100%;
+            padding: 40px;
         }
 
-        header h1 {
-            color: #0a7ea4;
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        .login-title {
             font-size: 28px;
+            font-weight: 700;
+            color: #1B8A4C;
+            margin-bottom: 8px;
         }
 
-        .auth-section {
+        .login-subtitle {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #1B8A4C;
+            box-shadow: 0 0 0 3px rgba(27, 138, 76, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #1B8A4C;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            background: #158a3c;
+        }
+
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+
+        .error-message {
+            background: #FEE2E2;
+            border: 1px solid #FECACA;
+            color: #DC2626;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .credentials-box {
+            background: #F0F9FF;
+            border-left: 4px solid #1B8A4C;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 30px;
+            font-size: 13px;
+        }
+
+        .credentials-title {
+            font-weight: 700;
+            color: #1B8A4C;
+            margin-bottom: 8px;
+        }
+
+        .credentials-item {
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        /* Admin Panel */
+        .admin-wrapper {
+            display: none;
+        }
+
+        .admin-wrapper.show {
             display: flex;
-            gap: 10px;
-            align-items: center;
         }
 
-        .auth-section input {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        .admin-sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #E5E7EB;
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+
+        .admin-main {
+            margin-left: 250px;
+            flex: 1;
+            padding: 40px;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .sidebar-logo-icon {
+            font-size: 32px;
+        }
+
+        .sidebar-logo-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1B8A4C;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu-item {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
             font-size: 14px;
         }
 
-        .auth-section button {
-            padding: 8px 16px;
-            background: #0a7ea4;
+        .sidebar-menu-link:hover {
+            background: #f5f5f5;
+            color: #1B8A4C;
+        }
+
+        .sidebar-menu-link.active {
+            background: #E8F5EE;
+            color: #1B8A4C;
+            font-weight: 600;
+        }
+
+        .sidebar-logout {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #E5E7EB;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #DC2626;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            font-weight: bold;
+            transition: background 0.3s;
         }
 
-        .auth-section button:hover {
-            background: #0a6fa4;
+        .logout-btn:hover {
+            background: #B91C1C;
         }
 
-        .tabs {
+        .admin-header {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
         }
 
-        .tab-button {
-            padding: 10px 20px;
-            background: #f0f0f0;
-            border: 2px solid transparent;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-
-        .tab-button.active {
-            background: #0a7ea4;
-            color: white;
-            border-color: #0a7ea4;
-        }
-
-        .tab-button:hover {
-            background: #e0e0e0;
-        }
-
-        .tab-button.active:hover {
-            background: #0a6fa4;
+        .admin-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1B8A4C;
         }
 
         .tab-content {
             display: none;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .tab-content.active {
             display: block;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #0a7ea4;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .grid {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #1B8A4C;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1B8A4C;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1B8A4C;
+            margin-bottom: 16px;
+            margin-top: 30px;
         }
 
         .card {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #0a7ea4;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
-        .card h3 {
-            color: #0a7ea4;
-            margin-bottom: 10px;
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
             font-size: 16px;
+            font-weight: 700;
+            color: #1B8A4C;
         }
 
-        .card p {
-            color: #666;
+        .badge {
+            background: #FEF3C7;
+            color: #F59E0B;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .card-content {
             font-size: 14px;
-            margin: 5px 0;
+            color: #666;
+            line-height: 1.6;
         }
 
-        .error {
-            background: #fee;
-            border-left-color: #f00;
-            color: #c00;
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+
+        .card-row:last-child {
+            border-bottom: none;
+        }
+
+        .card-row-label {
+            font-weight: 600;
+            color: #1B8A4C;
+        }
+
+        .card-row-value {
+            color: #666;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #E5E7EB;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #1B8A4C;
+            border-radius: 4px;
+            transition: width 0.3s;
         }
 
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            font-size: 14px;
         }
 
         .table th {
-            background: #f0f0f0;
+            background: #f5f5f5;
             padding: 12px;
             text-align: left;
-            border-bottom: 2px solid #ddd;
-            font-weight: bold;
-            color: #333;
+            border-bottom: 2px solid #E5E7EB;
+            font-weight: 700;
+            color: #1B8A4C;
         }
 
         .table td {
             padding: 12px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #E5E7EB;
         }
 
         .table tr:hover {
             background: #f9f9f9;
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .status-online {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-offline {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .empty {
+        .loading {
             text-align: center;
             padding: 40px;
             color: #999;
         }
 
-        .refresh-btn {
-            padding: 10px 20px;
-            background: #0a7ea4;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .refresh-btn:hover {
-            background: #0a6fa4;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
+        .empty-state {
             text-align: center;
+            padding: 40px;
+            color: #999;
         }
 
-        .stat-card h4 {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 10px;
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
         }
 
-        .stat-card .number {
-            font-size: 32px;
-            font-weight: bold;
-        }
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #E5E7EB;
+            }
 
-        .image-thumb {
-            max-width: 100px;
-            max-height: 100px;
-            border-radius: 5px;
-            margin-top: 10px;
+            .admin-main {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🌱 Canteiro Saudável - Painel Admin</h1>
-            <div class="auth-section">
-                <input type="email" id="email" placeholder="Email" value="admin@canteiro.com">
-                <input type="password" id="password" placeholder="Senha" value="admin123">
-                <button onclick="login()">Login</button>
-                <button onclick="logout()" style="background: #999;">Logout</button>
+    <!-- Login Form -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="logo-icon">🌱</div>
+                <div class="login-title">Canteiro Saudável</div>
+                <div class="login-subtitle">Painel Administrativo</div>
             </div>
-        </header>
 
-        <div class="tabs">
-            <button class="tab-button active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-            <button class="tab-button" onclick="switchTab('employees')">👥 Funcionários</button>
-            <button class="tab-button" onclick="switchTab('health')">❤️ Saúde</button>
-            <button class="tab-button" onclick="switchTab('hydration')">💧 Hidratação</button>
-            <button class="tab-button" onclick="switchTab('challenges')">🏆 Desafios</button>
+            <div id="errorMessage" class="error-message"></div>
+
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="email" class="form-input" placeholder="admin@canteiro.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Senha</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="login-btn">Entrar</button>
+            </form>
+
+            <div class="credentials-box">
+                <div class="credentials-title">Credenciais de Teste:</div>
+                <div class="credentials-item">📧 admin@canteiro.com</div>
+                <div class="credentials-item">🔑 admin123</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminWrapper" class="admin-wrapper">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">🌱</div>
+                <div class="sidebar-logo-text">Canteiro Saudável</div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a class="sidebar-menu-link active" onclick="switchTab('dashboard')">📊 Dashboard</a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a class="sidebar-menu-link" onclick="switchTab('funcionarios')">👥 Funcionários</a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a class="sidebar-menu-link" onclick="switchTab('hidratacao')">💧 Hidratação</a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a class="sidebar-menu-link" onclick="switchTab('saude')">❤️ Saúde</a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a class="sidebar-menu-link" onclick="switchTab('desafios')">🎯 Desafios</a>
+                </li>
+            </ul>
+
+            <div class="sidebar-logout">
+                <button class="logout-btn" onclick="handleLogout()">Sair</button>
+            </div>
         </div>
 
-        <!-- Dashboard -->
-        <div id="dashboard" class="tab-content active">
-            <button class="refresh-btn" onclick="loadDashboard()">🔄 Atualizar</button>
-            <div class="stats" id="stats"></div>
-            <div id="dashboard-content"></div>
-        </div>
+        <!-- Main Content -->
+        <div class="admin-main">
+            <div class="admin-header">
+                <div class="admin-title">Painel Administrativo</div>
+            </div>
 
-        <!-- Employees -->
-        <div id="employees" class="tab-content">
-            <button class="refresh-btn" onclick="loadEmployees()">🔄 Atualizar</button>
-            <div id="employees-content"></div>
-        </div>
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="stats-grid" id="statsGrid"></div>
+                <div id="dashboardContent"></div>
+            </div>
 
-        <!-- Health -->
-        <div id="health" class="tab-content">
-            <button class="refresh-btn" onclick="loadHealth()">🔄 Atualizar</button>
-            <div id="health-content"></div>
-        </div>
+            <!-- Funcionários Tab -->
+            <div id="funcionarios" class="tab-content">
+                <div class="section-title">👥 Funcionários Cadastrados</div>
+                <div id="funcionariosContent"></div>
+            </div>
 
-        <!-- Hydration -->
-        <div id="hydration" class="tab-content">
-            <button class="refresh-btn" onclick="loadHydration()">🔄 Atualizar</button>
-            <div id="hydration-content"></div>
-        </div>
+            <!-- Hidratação Tab -->
+            <div id="hidratacao" class="tab-content">
+                <div class="section-title">💧 Registro de Hidratação</div>
+                <div id="hidratacaoContent"></div>
+            </div>
 
-        <!-- Challenges -->
-        <div id="challenges" class="tab-content">
-            <button class="refresh-btn" onclick="loadChallenges()">🔄 Atualizar</button>
-            <div id="challenges-content"></div>
+            <!-- Saúde Tab -->
+            <div id="saude" class="tab-content">
+                <div class="section-title">❤️ Registros de Saúde</div>
+                <div id="saudeContent"></div>
+            </div>
+
+            <!-- Desafios Tab -->
+            <div id="desafios" class="tab-content">
+                <div class="section-title">🎯 Desafios Ativos</div>
+                <div id="desafiosContent"></div>
+            </div>
         </div>
     </div>
 
@@ -332,28 +560,36 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const storage = firebase.storage();
 
         let isLoggedIn = false;
 
-        function login() {
+        function handleLogin(event) {
+            event.preventDefault();
+            
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMessage');
 
             if (email === 'admin@canteiro.com' && password === 'admin123') {
                 isLoggedIn = true;
-                localStorage.setItem('adminLoggedIn', 'true');
-                alert('Login realizado com sucesso!');
+                localStorage.setItem('admin_logged_in', 'true');
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('adminWrapper').classList.add('show');
+                errorDiv.classList.remove('show');
                 loadDashboard();
             } else {
-                alert('Email ou senha inválidos!');
+                errorDiv.textContent = 'Email ou senha incorretos';
+                errorDiv.classList.add('show');
             }
         }
 
-        function logout() {
+        function handleLogout() {
             isLoggedIn = false;
-            localStorage.removeItem('adminLoggedIn');
-            alert('Logout realizado!');
+            localStorage.removeItem('admin_logged_in');
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('adminWrapper').classList.remove('show');
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
         }
 
         function switchTab(tabName) {
@@ -361,93 +597,107 @@
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
+
+            // Remove active from all menu items
+            document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+                link.classList.remove('active');
             });
 
             // Show selected tab
             document.getElementById(tabName).classList.add('active');
+
+            // Add active to clicked menu item
             event.target.classList.add('active');
 
             // Load content
             if (tabName === 'dashboard') loadDashboard();
-            else if (tabName === 'employees') loadEmployees();
-            else if (tabName === 'health') loadHealth();
-            else if (tabName === 'hydration') loadHydration();
-            else if (tabName === 'challenges') loadChallenges();
+            else if (tabName === 'funcionarios') loadFuncionarios();
+            else if (tabName === 'hidratacao') loadHidratacao();
+            else if (tabName === 'saude') loadSaude();
+            else if (tabName === 'desafios') loadDesafios();
         }
 
         function loadDashboard() {
-            if (!isLoggedIn) {
-                document.getElementById('dashboard-content').innerHTML = '<div class="empty">Faça login para ver o dashboard</div>';
-                return;
-            }
+            const statsGrid = document.getElementById('statsGrid');
+            const dashboardContent = document.getElementById('dashboardContent');
 
-            const content = document.getElementById('dashboard-content');
-            content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
+            statsGrid.innerHTML = '<div class="loading">Carregando estatísticas...</div>';
+            dashboardContent.innerHTML = '';
 
             db.collection('employees').get().then((snapshot) => {
-                const employees = snapshot.size;
-                let totalHealth = 0;
+                let totalEmployees = snapshot.size;
                 let totalHydration = 0;
+                let totalCheckIns = 0;
+                let healthRecords = 0;
 
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    if (data.health) totalHealth++;
                     if (data.hydration) totalHydration++;
+                    if (data.checkIns) totalCheckIns++;
+                    if (data.health) healthRecords++;
                 });
 
-                const statsHtml = `
+                statsGrid.innerHTML = `
                     <div class="stat-card">
-                        <h4>Total de Funcionários</h4>
-                        <div class="number">${employees}</div>
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-label">Funcionários</div>
+                        <div class="stat-value">${totalEmployees}</div>
                     </div>
                     <div class="stat-card">
-                        <h4>Registros de Saúde</h4>
-                        <div class="number">${totalHealth}</div>
+                        <div class="stat-icon">💧</div>
+                        <div class="stat-label">Registros de Hidratação</div>
+                        <div class="stat-value">${totalHydration}</div>
                     </div>
                     <div class="stat-card">
-                        <h4>Registros de Hidratação</h4>
-                        <div class="number">${totalHydration}</div>
+                        <div class="stat-icon">✓</div>
+                        <div class="stat-label">Check-ins</div>
+                        <div class="stat-value">${totalCheckIns}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">❤️</div>
+                        <div class="stat-label">Registros de Saúde</div>
+                        <div class="stat-value">${healthRecords}</div>
                     </div>
                 `;
 
-                document.getElementById('stats').innerHTML = statsHtml;
-                content.innerHTML = '<div class="card"><h3>Dashboard</h3><p>Dados carregados com sucesso! Total de funcionários: ' + employees + '</p></div>';
+                dashboardContent.innerHTML = `
+                    <div class="section-title">📋 Resumo Geral</div>
+                    <div class="card">
+                        <div class="card-content">
+                            <p>✅ Sistema sincronizando dados em tempo real</p>
+                            <p style="margin-top: 12px; color: #1B8A4C; font-weight: 600;">Dados carregados do Firebase com sucesso!</p>
+                        </div>
+                    </div>
+                `;
             }).catch(error => {
-                content.innerHTML = `<div class="card error">Erro ao carregar dashboard: ${error.message}</div>`;
+                statsGrid.innerHTML = `<div class="card" style="grid-column: 1/-1; background: #FEE2E2; border-left-color: #DC2626;">
+                    <div style="color: #DC2626;">❌ Erro ao carregar dados: ${error.message}</div>
+                </div>`;
             });
         }
 
-        function loadEmployees() {
-            if (!isLoggedIn) {
-                document.getElementById('employees-content').innerHTML = '<div class="empty">Faça login para ver funcionários</div>';
-                return;
-            }
-
-            const content = document.getElementById('employees-content');
-            content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
+        function loadFuncionarios() {
+            const content = document.getElementById('funcionariosContent');
+            content.innerHTML = '<div class="loading">Carregando funcionários...</div>';
 
             db.collection('employees').get().then((snapshot) => {
                 if (snapshot.empty) {
-                    content.innerHTML = '<div class="empty">Nenhum funcionário cadastrado</div>';
+                    content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👤</div>Nenhum funcionário cadastrado</div>';
                     return;
                 }
 
-                let html = '<table class="table"><thead><tr><th>Matrícula</th><th>Nome</th><th>Turno</th><th>Função</th><th>Status</th></tr></thead><tbody>';
+                let html = '<table class="table"><thead><tr><th>Matrícula</th><th>Nome</th><th>Função</th><th>Turno</th><th>Peso</th><th>Altura</th></tr></thead><tbody>';
 
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    const status = data.lastLogin ? 'Online' : 'Offline';
-                    const statusClass = data.lastLogin ? 'status-online' : 'status-offline';
-
                     html += `
                         <tr>
                             <td>${data.matricula || 'N/A'}</td>
-                            <td>${data.name || 'N/A'}</td>
-                            <td>${data.shift || 'N/A'}</td>
-                            <td>${data.role || 'N/A'}</td>
-                            <td><span class="status-badge ${statusClass}">${status}</span></td>
+                            <td>${data.nome || 'N/A'}</td>
+                            <td>${data.funcao || 'N/A'}</td>
+                            <td>${data.tipoTrabalho || 'N/A'}</td>
+                            <td>${data.peso || 'N/A'} kg</td>
+                            <td>${data.altura || 'N/A'} m</td>
                         </tr>
                     `;
                 });
@@ -455,136 +705,177 @@
                 html += '</tbody></table>';
                 content.innerHTML = html;
             }).catch(error => {
-                content.innerHTML = `<div class="card error">Erro ao carregar funcionários: ${error.message}</div>`;
+                content.innerHTML = `<div class="card" style="background: #FEE2E2; border-left-color: #DC2626;">
+                    <div style="color: #DC2626;">❌ Erro: ${error.message}</div>
+                </div>`;
             });
         }
 
-        function loadHealth() {
-            if (!isLoggedIn) {
-                document.getElementById('health-content').innerHTML = '<div class="empty">Faça login para ver saúde</div>';
-                return;
-            }
-
-            const content = document.getElementById('health-content');
-            content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
+        function loadHidratacao() {
+            const content = document.getElementById('hidratacaoContent');
+            content.innerHTML = '<div class="loading">Carregando dados de hidratação...</div>';
 
             db.collection('employees').get().then((snapshot) => {
                 if (snapshot.empty) {
-                    content.innerHTML = '<div class="empty">Nenhum registro de saúde</div>';
+                    content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💧</div>Nenhum registro de hidratação</div>';
                     return;
                 }
 
-                let html = '<div class="grid">';
-                let hasHealth = false;
+                let html = '';
+                let hasData = false;
 
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    if (data.health) {
-                        hasHealth = true;
+                    if (data.hydration && data.hydration.length > 0) {
+                        hasData = true;
+                        const lastRecord = data.hydration[data.hydration.length - 1];
+                        const progress = (lastRecord.amount / 2500) * 100;
+
                         html += `
                             <div class="card">
-                                <h3>${data.name || data.matricula}</h3>
-                                <p><strong>Matrícula:</strong> ${data.matricula}</p>
-                                <p><strong>Pressão:</strong> ${data.health.bloodPressure || 'N/A'}</p>
-                                <p><strong>Sintomas:</strong> ${data.health.symptoms ? data.health.symptoms.join(', ') : 'Nenhum'}</p>
-                                <p><strong>Última atualização:</strong> ${data.health.lastUpdate || 'N/A'}</p>
+                                <div class="card-header">
+                                    <div>
+                                        <div class="card-title">${data.nome || 'Funcionário'}</div>
+                                        <div class="card-content">Matrícula: ${data.matricula}</div>
+                                    </div>
+                                </div>
+                                <div class="card-row">
+                                    <div class="card-row-label">Ingestão Hoje:</div>
+                                    <div class="card-row-value">${lastRecord.amount || 0}ml / 2500ml</div>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${Math.min(progress, 100)}%"></div>
+                                </div>
+                                <div class="card-content" style="text-align: right; font-size: 12px;">
+                                    ${Math.round(progress)}% da meta
+                                </div>
                             </div>
                         `;
                     }
                 });
 
-                html += '</div>';
-                content.innerHTML = hasHealth ? html : '<div class="empty">Nenhum registro de saúde</div>';
+                content.innerHTML = hasData ? html : '<div class="empty-state"><div class="empty-state-icon">💧</div>Nenhum registro de hidratação</div>';
             }).catch(error => {
-                content.innerHTML = `<div class="card error">Erro ao carregar saúde: ${error.message}</div>`;
+                content.innerHTML = `<div class="card" style="background: #FEE2E2; border-left-color: #DC2626;">
+                    <div style="color: #DC2626;">❌ Erro: ${error.message}</div>
+                </div>`;
             });
         }
 
-        function loadHydration() {
-            if (!isLoggedIn) {
-                document.getElementById('hydration-content').innerHTML = '<div class="empty">Faça login para ver hidratação</div>';
-                return;
-            }
-
-            const content = document.getElementById('hydration-content');
-            content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
+        function loadSaude() {
+            const content = document.getElementById('saudeContent');
+            content.innerHTML = '<div class="loading">Carregando dados de saúde...</div>';
 
             db.collection('employees').get().then((snapshot) => {
                 if (snapshot.empty) {
-                    content.innerHTML = '<div class="empty">Nenhum registro de hidratação</div>';
+                    content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❤️</div>Nenhum registro de saúde</div>';
                     return;
                 }
 
-                let html = '<div class="grid">';
-                let hasHydration = false;
+                let html = '';
+                let hasData = false;
 
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    if (data.hydration) {
-                        hasHydration = true;
-                        const today = new Date().toISOString().split('T')[0];
-                        const todayHydration = data.hydration[today] || {};
+                    if (data.health && data.health.length > 0) {
+                        hasData = true;
+                        const lastRecord = data.health[data.health.length - 1];
 
                         html += `
                             <div class="card">
-                                <h3>${data.name || data.matricula}</h3>
-                                <p><strong>Matrícula:</strong> ${data.matricula}</p>
-                                <p><strong>Água hoje:</strong> ${(todayHydration.waterIntake || 0) / 1000}L</p>
-                                <p><strong>Meta:</strong> 2.8L</p>
-                                <p><strong>Progresso:</strong> ${Math.round(((todayHydration.waterIntake || 0) / 2800) * 100)}%</p>
+                                <div class="card-header">
+                                    <div>
+                                        <div class="card-title">${data.nome || 'Funcionário'}</div>
+                                        <div class="card-content">Matrícula: ${data.matricula}</div>
+                                    </div>
+                                </div>
+                                <div class="card-row">
+                                    <div class="card-row-label">Pressão:</div>
+                                    <div class="card-row-value">${lastRecord.bloodPressure || 'N/A'}</div>
+                                </div>
+                                <div class="card-row">
+                                    <div class="card-row-label">Sintomas:</div>
+                                    <div class="card-row-value">${lastRecord.symptoms ? lastRecord.symptoms.join(', ') : 'Nenhum'}</div>
+                                </div>
+                                <div class="card-row">
+                                    <div class="card-row-label">Data:</div>
+                                    <div class="card-row-value">${lastRecord.date || 'N/A'}</div>
+                                </div>
                             </div>
                         `;
                     }
                 });
 
-                html += '</div>';
-                content.innerHTML = hasHydration ? html : '<div class="empty">Nenhum registro de hidratação</div>';
+                content.innerHTML = hasData ? html : '<div class="empty-state"><div class="empty-state-icon">❤️</div>Nenhum registro de saúde</div>';
             }).catch(error => {
-                content.innerHTML = `<div class="card error">Erro ao carregar hidratação: ${error.message}</div>`;
+                content.innerHTML = `<div class="card" style="background: #FEE2E2; border-left-color: #DC2626;">
+                    <div style="color: #DC2626;">❌ Erro: ${error.message}</div>
+                </div>`;
             });
         }
 
-        function loadChallenges() {
-            if (!isLoggedIn) {
-                document.getElementById('challenges-content').innerHTML = '<div class="empty">Faça login para ver desafios</div>';
-                return;
-            }
+        function loadDesafios() {
+            const content = document.getElementById('desafiosContent');
+            content.innerHTML = '<div class="loading">Carregando desafios...</div>';
 
-            const content = document.getElementById('challenges-content');
-            content.innerHTML = '<div class="loading"><div class="spinner"></div>Carregando...</div>';
-
-            db.collection('challenges').get().then((snapshot) => {
+            db.collection('employees').get().then((snapshot) => {
                 if (snapshot.empty) {
-                    content.innerHTML = '<div class="empty">Nenhum desafio</div>';
+                    content.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎯</div>Nenhum desafio ativo</div>';
                     return;
                 }
 
-                let html = '<div class="grid">';
+                let html = '';
+                let hasData = false;
 
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    html += `
-                        <div class="card">
-                            <h3>${data.name || 'Desafio'}</h3>
-                            <p><strong>Funcionário:</strong> ${data.employeeName || 'N/A'}</p>
-                            <p><strong>Status:</strong> ${data.status || 'Pendente'}</p>
-                            <p><strong>Data:</strong> ${data.date || 'N/A'}</p>
-                            ${data.photoUrl ? `<img src="${data.photoUrl}" alt="Foto" class="image-thumb">` : ''}
-                        </div>
-                    `;
+                    if (data.challenges && data.challenges.length > 0) {
+                        hasData = true;
+                        data.challenges.forEach((challenge, index) => {
+                            html += `
+                                <div class="card">
+                                    <div class="card-header">
+                                        <div>
+                                            <div class="card-title">${data.nome || 'Funcionário'} - ${challenge.type}</div>
+                                            <div class="card-content">Matrícula: ${data.matricula}</div>
+                                        </div>
+                                        <div class="badge">Ativo</div>
+                                    </div>
+                                    <div class="card-row">
+                                        <div class="card-row-label">Progresso:</div>
+                                        <div class="card-row-value">${challenge.progress || 0}%</div>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${challenge.progress || 0}%"></div>
+                                    </div>
+                                    <div class="card-row">
+                                        <div class="card-row-label">Dificuldades:</div>
+                                        <div class="card-row-value">${challenge.difficulty || 'Nenhuma'}</div>
+                                    </div>
+                                    ${challenge.photos ? `<div class="card-row">
+                                        <div class="card-row-label">Fotos:</div>
+                                        <div class="card-row-value">${challenge.photos.length} anexada(s)</div>
+                                    </div>` : ''}
+                                </div>
+                            `;
+                        });
+                    }
                 });
 
-                html += '</div>';
-                content.innerHTML = html;
+                content.innerHTML = hasData ? html : '<div class="empty-state"><div class="empty-state-icon">🎯</div>Nenhum desafio ativo</div>';
             }).catch(error => {
-                content.innerHTML = `<div class="card error">Erro ao carregar desafios: ${error.message}</div>`;
+                content.innerHTML = `<div class="card" style="background: #FEE2E2; border-left-color: #DC2626;">
+                    <div style="color: #DC2626;">❌ Erro: ${error.message}</div>
+                </div>`;
             });
         }
 
-        // Auto-login on page load
-        window.addEventListener('load', () => {
-            if (localStorage.getItem('adminLoggedIn')) {
+        // Check if already logged in
+        window.addEventListener('load', function() {
+            if (localStorage.getItem('admin_logged_in') === 'true') {
                 isLoggedIn = true;
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('adminWrapper').classList.add('show');
                 loadDashboard();
             }
         });

@@ -1,9 +1,8 @@
-import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, Modal, TextInput } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Alert, StyleSheet, Modal, TextInput, Platform } from "react-native";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScreenContainer } from "@/components/screen-container";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 const CUP_SIZE = 350;
 

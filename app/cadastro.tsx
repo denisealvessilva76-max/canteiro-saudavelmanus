@@ -1,11 +1,10 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import * as Haptics from "expo-haptics";
-import { Platform } from "react-native";
 
 export default function CadastroScreen() {
   const router = useRouter();

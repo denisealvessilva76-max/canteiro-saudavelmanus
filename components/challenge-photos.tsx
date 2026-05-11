@@ -238,12 +238,7 @@ export function ChallengePhotos({ challengeId, challengeName, onPhotoAdded }: Ch
                 className="border border-border rounded-lg px-3 py-2"
                 style={{ backgroundColor: colors.background }}
               >
-                <Text
-                  className="text-sm text-foreground"
-                  onPress={() => {}}
-                  placeholder="Descreva a foto..."
-                  placeholderTextColor={colors.muted}
-                >
+                <Text className="text-sm text-foreground">
                   {description || "Descreva a foto..."}
                 </Text>
               </View>

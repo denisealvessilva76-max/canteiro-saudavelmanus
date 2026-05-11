@@ -79,6 +79,9 @@ export default function RootLayout() {
             refetchOnWindowFocus: false,
             // Retry failed requests once
             retry: 1,
+            // Aumentar timeout para 15 segundos
+            staleTime: 1000 * 60 * 5,
+            gcTime: 1000 * 60 * 10,
           },
         },
       }),

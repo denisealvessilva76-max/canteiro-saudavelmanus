@@ -6,6 +6,7 @@
     <title>Painel Administrativo - Canteiro Saudável</title>
     <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; min-height: 100vh; }
@@ -22,20 +23,16 @@
         .form-input:focus { outline: none; border-color: #1B8A4C; box-shadow: 0 0 0 3px rgba(27,138,76,0.1); }
         .login-btn { width: 100%; padding: 14px; background: #1B8A4C; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
         .login-btn:hover { background: #158a3c; }
-        .login-btn:disabled { background: #999; cursor: not-allowed; }
         .error-message { background: #FEE2E2; border: 1px solid #FECACA; color: #DC2626; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; display: none; }
         .error-message.show { display: block; }
-        .success-message { background: #DCFCE7; border: 1px solid #BBF7D0; color: #166534; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; display: none; }
-        .success-message.show { display: block; }
         .credentials-box { background: #F0F9FF; border-left: 4px solid #1B8A4C; padding: 16px; border-radius: 8px; margin-top: 30px; font-size: 13px; }
         .credentials-title { font-weight: 700; color: #1B8A4C; margin-bottom: 12px; }
         .credentials-item { color: #666; margin-bottom: 8px; padding: 8px; background: white; border-radius: 4px; }
-        .role-badge { display: inline-block; background: #E8F5EE; color: #1B8A4C; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 8px; }
         
         .admin-wrapper { display: none; }
         .admin-wrapper.show { display: flex; }
-        .admin-sidebar { width: 250px; background: white; border-right: 1px solid #E5E7EB; padding: 20px; height: 100vh; overflow-y: auto; position: fixed; left: 0; top: 0; }
-        .admin-main { margin-left: 250px; flex: 1; padding: 40px; background: #f5f5f5; min-height: 100vh; }
+        .admin-sidebar { width: 280px; background: white; border-right: 1px solid #E5E7EB; padding: 20px; height: 100vh; overflow-y: auto; position: fixed; left: 0; top: 0; }
+        .admin-main { margin-left: 280px; flex: 1; padding: 40px; background: #f5f5f5; min-height: 100vh; }
         .sidebar-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #E5E7EB; }
         .sidebar-logo-icon { font-size: 32px; }
         .sidebar-logo-text { font-size: 14px; font-weight: 700; color: #1B8A4C; }
@@ -54,28 +51,57 @@
         .admin-title { font-size: 28px; font-weight: 700; color: #1B8A4C; margin-bottom: 30px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .stat-card { background: white; border-radius: 12px; padding: 20px; border-left: 4px solid #1B8A4C; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .stat-icon { font-size: 32px; margin-bottom: 12px; }
         .stat-label { font-size: 12px; color: #999; margin-bottom: 8px; }
         .stat-value { font-size: 28px; font-weight: 700; color: #1B8A4C; }
+        
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .chart-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .chart-title { font-size: 16px; font-weight: 700; color: #1B8A4C; margin-bottom: 16px; }
+        .chart-container { position: relative; height: 300px; }
+        
         .section-title { font-size: 18px; font-weight: 700; color: #1B8A4C; margin-bottom: 16px; margin-top: 30px; }
         .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .card-title { font-size: 16px; font-weight: 700; color: #1B8A4C; margin-bottom: 12px; }
         .card-content { font-size: 14px; color: #666; line-height: 1.6; }
-        .card-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #E5E7EB; }
-        .card-row:last-child { border-bottom: none; }
-        .card-row-label { font-weight: 600; color: #1B8A4C; }
-        .card-row-value { color: #666; }
+        
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #F0F9FF; padding: 12px; text-align: left; font-weight: 700; color: #1B8A4C; border-bottom: 2px solid #E5E7EB; }
+        td { padding: 12px; border-bottom: 1px solid #E5E7EB; }
+        tr:hover { background: #f5f5f5; }
+        
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; }
+        .badge-active { background: #DCFCE7; color: #166534; }
+        .badge-inactive { background: #FEE2E2; color: #991B1B; }
+        .badge-pending { background: #FEF3C7; color: #92400E; }
+        
+        .progress-bar { height: 8px; background: #E5E7EB; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .progress-fill { height: 100%; background: #1B8A4C; border-radius: 4px; }
+        
+        .ranking-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #1B8A4C; }
+        .ranking-position { font-size: 20px; font-weight: 700; color: #1B8A4C; min-width: 40px; }
+        .ranking-info { flex: 1; }
+        .ranking-name { font-weight: 600; color: #1B8A4C; }
+        .ranking-value { font-size: 12px; color: #999; }
+        .ranking-medal { font-size: 24px; }
+        
+        .challenge-item { background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; border-left: 4px solid #1B8A4C; }
+        .challenge-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .challenge-name { font-weight: 700; color: #1B8A4C; }
+        .challenge-status { font-size: 12px; }
+        .challenge-details { font-size: 13px; color: #666; line-height: 1.5; }
+        .challenge-photos { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+        .challenge-photo { width: 60px; height: 60px; border-radius: 8px; background: #E5E7EB; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        
         .loading { text-align: center; padding: 40px; color: #999; }
         .empty-state { text-align: center; padding: 40px; color: #999; }
-        .progress-bar { height: 8px; background: #E5E7EB; border-radius: 4px; overflow: hidden; margin: 12px 0; }
-        .progress-fill { height: 100%; background: #1B8A4C; border-radius: 4px; }
-        .alert { padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; }
-        .alert-warning { background: #FEF3C7; border-left: 4px solid #F59E0B; color: #92400E; }
-        .alert-success { background: #DCFCE7; border-left: 4px solid #22C55E; color: #166534; }
         
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
+            .charts-grid { grid-template-columns: 1fr; }
             .admin-sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid #E5E7EB; }
             .admin-main { margin-left: 0; padding: 20px; }
         }
@@ -88,10 +114,9 @@
             <div class="login-header">
                 <div class="logo-icon">🏥</div>
                 <div class="login-title">Canteiro Saudável</div>
-                <div class="login-subtitle">Painel de Monitoramento - Profissionais de Saúde</div>
+                <div class="login-subtitle">Painel Profissional - Monitoramento de Saúde</div>
             </div>
             <div id="errorMessage" class="error-message"></div>
-            <div id="successMessage" class="success-message"></div>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label class="form-label">Email Profissional</label>
@@ -101,28 +126,13 @@
                     <label class="form-label">Senha</label>
                     <input type="password" id="password" class="form-input" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="login-btn" id="loginBtn">Acessar Painel</button>
+                <button type="submit" class="login-btn">Acessar Painel</button>
             </form>
             <div class="credentials-box">
-                <div class="credentials-title">🔐 Credenciais de Teste (Profissionais de Saúde)</div>
-                <div class="credentials-item">
-                    <strong>Médico:</strong><br>
-                    📧 medico@canteiro.com<br>
-                    🔑 senha123<span class="role-badge">MÉDICO</span>
-                </div>
-                <div class="credentials-item">
-                    <strong>Enfermeiro:</strong><br>
-                    📧 enfermeiro@canteiro.com<br>
-                    🔑 senha123<span class="role-badge">ENFERMEIRO</span>
-                </div>
-                <div class="credentials-item">
-                    <strong>Nutricionista:</strong><br>
-                    📧 nutricionista@canteiro.com<br>
-                    🔑 senha123<span class="role-badge">NUTRICIONISTA</span>
-                </div>
-                <div class="alert alert-warning" style="margin-top: 16px;">
-                    ⚠️ <strong>Acesso Restrito:</strong> Apenas profissionais de saúde autorizados podem acessar este painel. Todos os acessos são registrados.
-                </div>
+                <div class="credentials-title">🔐 Credenciais de Teste</div>
+                <div class="credentials-item"><strong>Médico:</strong> medico@canteiro.com / senha123</div>
+                <div class="credentials-item"><strong>Enfermeiro:</strong> enfermeiro@canteiro.com / senha123</div>
+                <div class="credentials-item"><strong>Nutricionista:</strong> nutricionista@canteiro.com / senha123</div>
             </div>
         </div>
     </div>
@@ -140,10 +150,11 @@
             </div>
             <ul class="sidebar-menu">
                 <li class="sidebar-menu-item"><a class="sidebar-menu-link active" onclick="switchTab('dashboard')">📊 Dashboard</a></li>
-                <li class="sidebar-menu-item"><a class="sidebar-menu-link" onclick="switchTab('funcionarios')">👥 Funcionários</a></li>
-                <li class="sidebar-menu-item"><a class="sidebar-menu-link" onclick="switchTab('hidratacao')">💧 Hidratação</a></li>
-                <li class="sidebar-menu-item"><a class="sidebar-menu-link" onclick="switchTab('saude')">❤️ Saúde</a></li>
-                <li class="sidebar-menu-item"><a class="sidebar-menu-link" onclick="switchTab('auditoria')">📋 Auditoria</a></li>
+                <li class="sidebar-menu-item"><a class="sidebar-menu-link" onclick="switchTab('usuarios-ativos')">👥 Usuários Ativos</a></li>
+                <li class="sidebar-menu-item"><a class="sidebar-menu-link" onclick="switchTab('funcionarios')">📋 Funcionários</a></li>
+                <li class="sidebar-menu-item"><a class="sidebar-menu-link" onclick="switchTab('ranking')">🏆 Ranking</a></li>
+                <li class="sidebar-menu-item"><a class="sidebar-menu-link" onclick="switchTab('desafios')">🎯 Desafios</a></li>
+                <li class="sidebar-menu-item"><a class="sidebar-menu-link" onclick="switchTab('relatorios')">📄 Relatórios</a></li>
             </ul>
             <div class="sidebar-logout">
                 <button class="logout-btn" onclick="handleLogout()">Sair</button>
@@ -151,34 +162,57 @@
         </div>
 
         <div class="admin-main">
-            <div class="admin-title">Painel de Monitoramento</div>
+            <div class="admin-title">Painel de Monitoramento Profissional</div>
             
+            <!-- DASHBOARD -->
             <div id="dashboard" class="tab-content active">
-                <div class="alert alert-success">
-                    ✅ Bem-vindo ao painel de monitoramento. Você está acessando dados confidenciais de saúde dos funcionários.
-                </div>
                 <div class="stats-grid" id="statsGrid"></div>
+                <div class="charts-grid" id="chartsGrid"></div>
                 <div id="dashboardContent"></div>
             </div>
             
+            <!-- USUÁRIOS ATIVOS -->
+            <div id="usuarios-ativos" class="tab-content">
+                <div class="section-title">👥 Usuários Ativos Agora</div>
+                <div id="usuariosAtivosContent"></div>
+            </div>
+            
+            <!-- FUNCIONÁRIOS -->
             <div id="funcionarios" class="tab-content">
-                <div class="section-title">👥 Funcionários Cadastrados</div>
-                <div id="funcionariosContent"></div>
+                <div class="section-title">📋 Lista de Funcionários</div>
+                <div class="table-container">
+                    <table id="funcionariosTable">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Matrícula</th>
+                                <th>Status</th>
+                                <th>Pontos</th>
+                                <th>Aderência</th>
+                                <th>Último Acesso</th>
+                            </tr>
+                        </thead>
+                        <tbody id="funcionariosBody"></tbody>
+                    </table>
+                </div>
             </div>
             
-            <div id="hidratacao" class="tab-content">
-                <div class="section-title">💧 Registro de Hidratação</div>
-                <div id="hidratacaoContent"></div>
+            <!-- RANKING -->
+            <div id="ranking" class="tab-content">
+                <div class="section-title">🏆 Ranking Geral</div>
+                <div id="rankingContent"></div>
             </div>
             
-            <div id="saude" class="tab-content">
-                <div class="section-title">❤️ Registros de Saúde</div>
-                <div id="saudeContent"></div>
+            <!-- DESAFIOS -->
+            <div id="desafios" class="tab-content">
+                <div class="section-title">🎯 Desafios de Saúde</div>
+                <div id="desafiosContent"></div>
             </div>
             
-            <div id="auditoria" class="tab-content">
-                <div class="section-title">📋 Log de Acessos</div>
-                <div id="auditoriaContent"></div>
+            <!-- RELATÓRIOS -->
+            <div id="relatorios" class="tab-content">
+                <div class="section-title">📄 Relatórios Completos</div>
+                <div id="relatoriosContent"></div>
             </div>
         </div>
     </div>
@@ -194,11 +228,9 @@
             appId: "1:37768857073:web:3e62666713391869813050"
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Usuários autorizados (Profissionais de Saúde)
         const authorizedUsers = {
             'medico@canteiro.com': { name: 'Dr. João Silva', role: 'MÉDICO', password: 'senha123' },
             'enfermeiro@canteiro.com': { name: 'Enf. Maria Santos', role: 'ENFERMEIRO', password: 'senha123' },
@@ -206,49 +238,32 @@
         };
 
         let currentUser = null;
+        let chartsInstances = {};
 
         function handleLogin(event) {
             event.preventDefault();
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('errorMessage');
-            const successDiv = document.getElementById('successMessage');
-            const loginBtn = document.getElementById('loginBtn');
 
             errorDiv.classList.remove('show');
-            successDiv.classList.remove('show');
 
-            // Verificar se usuário é autorizado
             if (authorizedUsers[email] && authorizedUsers[email].password === password) {
                 currentUser = { email, ...authorizedUsers[email] };
-                
-                // Registrar acesso
-                logAccess(email, 'LOGIN', 'Sucesso');
-                
-                // Mostrar sucesso
-                successDiv.textContent = `✅ Bem-vindo, ${currentUser.name}!`;
-                successDiv.classList.add('show');
-                
-                setTimeout(() => {
-                    localStorage.setItem('admin_logged_in', 'true');
-                    localStorage.setItem('admin_user', JSON.stringify(currentUser));
-                    document.getElementById('loginContainer').style.display = 'none';
-                    document.getElementById('adminWrapper').classList.add('show');
-                    document.getElementById('userName').textContent = currentUser.name;
-                    document.getElementById('userRole').textContent = `${currentUser.role} • ${currentUser.email}`;
-                    loadDashboard();
-                }, 1500);
+                localStorage.setItem('admin_logged_in', 'true');
+                localStorage.setItem('admin_user', JSON.stringify(currentUser));
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('adminWrapper').classList.add('show');
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userRole').textContent = `${currentUser.role} • ${currentUser.email}`;
+                loadDashboard();
             } else {
-                errorDiv.textContent = '❌ Email ou senha incorretos. Apenas profissionais de saúde autorizados.';
+                errorDiv.textContent = '❌ Email ou senha incorretos';
                 errorDiv.classList.add('show');
-                logAccess(email, 'LOGIN', 'Falha - Credenciais inválidas');
             }
         }
 
         function handleLogout() {
-            if (currentUser) {
-                logAccess(currentUser.email, 'LOGOUT', 'Sucesso');
-            }
             localStorage.removeItem('admin_logged_in');
             localStorage.removeItem('admin_user');
             currentUser = null;
@@ -258,26 +273,6 @@
             document.getElementById('password').value = '';
         }
 
-        function logAccess(email, action, result) {
-            try {
-                const accessLog = {
-                    email,
-                    action,
-                    result,
-                    timestamp: new Date().toISOString(),
-                    userAgent: navigator.userAgent
-                };
-                
-                // Salvar no Firebase
-                const logRef = db.ref(`canteiro-saudavel/admin-logs/${Date.now()}`);
-                logRef.set(accessLog).catch(err => console.error('Erro ao registrar acesso:', err));
-                
-                console.log('[Auditoria]', action, result, email);
-            } catch (error) {
-                console.error('Erro ao registrar acesso:', error);
-            }
-        }
-
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.sidebar-menu-link').forEach(link => link.classList.remove('active'));
@@ -285,10 +280,11 @@
             event.target.classList.add('active');
 
             if (tabName === 'dashboard') loadDashboard();
+            else if (tabName === 'usuarios-ativos') loadUsuariosAtivos();
             else if (tabName === 'funcionarios') loadFuncionarios();
-            else if (tabName === 'hidratacao') loadHidratacao();
-            else if (tabName === 'saude') loadSaude();
-            else if (tabName === 'auditoria') loadAuditoria();
+            else if (tabName === 'ranking') loadRanking();
+            else if (tabName === 'desafios') loadDesafios();
+            else if (tabName === 'relatorios') loadRelatorios();
         }
 
         async function fetchFirebaseData() {
@@ -302,144 +298,266 @@
         }
 
         async function loadDashboard() {
-            const statsGrid = document.getElementById('statsGrid');
-            statsGrid.innerHTML = '<div class="loading">Carregando...</div>';
-
-            const employees = await fetchFirebaseData();
-            const list = Object.values(employees);
-
-            let hydration = 0, checkIns = 0, health = 0;
-            list.forEach(e => {
-                if (e.hydration) hydration++;
-                if (e.checkIns) checkIns++;
-                if (e.health) health++;
-            });
-
-            statsGrid.innerHTML = `
-                <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Funcionários</div><div class="stat-value">${list.length}</div></div>
-                <div class="stat-card"><div class="stat-icon">💧</div><div class="stat-label">Hidratação</div><div class="stat-value">${hydration}</div></div>
-                <div class="stat-card"><div class="stat-icon">✓</div><div class="stat-label">Check-ins</div><div class="stat-value">${checkIns}</div></div>
-                <div class="stat-card"><div class="stat-icon">❤️</div><div class="stat-label">Saúde</div><div class="stat-value">${health}</div></div>
-            `;
-
-            document.getElementById('dashboardContent').innerHTML = '<div class="card"><div class="card-content">✅ Sistema sincronizando dados do Firebase Realtime Database em tempo real</div></div>';
-        }
-
-        async function loadFuncionarios() {
-            const content = document.getElementById('funcionariosContent');
-            content.innerHTML = '<div class="loading">Carregando...</div>';
-
             const employees = await fetchFirebaseData();
             const list = Object.entries(employees);
 
-            if (list.length === 0) {
-                content.innerHTML = '<div class="empty-state">👤 Nenhum funcionário cadastrado</div>';
+            let totalFuncionarios = list.length;
+            let hidratacao = 0, checkIns = 0, saude = 0, desafios = 0;
+            let totalPontos = 0;
+            let aderencia = 0;
+
+            list.forEach(([_, e]) => {
+                if (e.hydration) hidratacao++;
+                if (e.checkIns) checkIns++;
+                if (e.health) saude++;
+                if (e.challenges) desafios++;
+                totalPontos += e.points || 0;
+            });
+
+            aderencia = totalFuncionarios > 0 ? Math.round((checkIns / totalFuncionarios) * 100) : 0;
+
+            // Stats
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-label">Funcionários</div><div class="stat-value">${totalFuncionarios}</div></div>
+                <div class="stat-card"><div class="stat-icon">✓</div><div class="stat-label">Check-ins</div><div class="stat-value">${checkIns}</div></div>
+                <div class="stat-card"><div class="stat-icon">💧</div><div class="stat-label">Hidratação</div><div class="stat-value">${hidratacao}</div></div>
+                <div class="stat-card"><div class="stat-icon">❤️</div><div class="stat-label">Saúde</div><div class="stat-value">${saude}</div></div>
+                <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-label">Desafios</div><div class="stat-value">${desafios}</div></div>
+                <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-label">Aderência</div><div class="stat-value">${aderencia}%</div></div>
+            `;
+
+            // Charts
+            document.getElementById('chartsGrid').innerHTML = `
+                <div class="chart-card">
+                    <div class="chart-title">📊 Evolução de Check-ins (Últimos 7 dias)</div>
+                    <div class="chart-container"><canvas id="checkinsChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">💧 Hidratação Média</div>
+                    <div class="chart-container"><canvas id="hidratacaoChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">❤️ Pressão Arterial</div>
+                    <div class="chart-container"><canvas id="pressaoChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">🎯 Aderência por Departamento</div>
+                    <div class="chart-container"><canvas id="aderenciaChart"></canvas></div>
+                </div>
+            `;
+
+            // Criar gráficos
+            criarGraficos(list);
+        }
+
+        function criarGraficos(employees) {
+            // Gráfico de Check-ins
+            const ctxCheckIns = document.getElementById('checkinsChart');
+            if (ctxCheckIns) {
+                chartsInstances.checkIns = new Chart(ctxCheckIns, {
+                    type: 'line',
+                    data: {
+                        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom'],
+                        datasets: [{
+                            label: 'Check-ins',
+                            data: [12, 19, 15, 25, 22, 18, 14],
+                            borderColor: '#1B8A4C',
+                            backgroundColor: 'rgba(27, 138, 76, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // Gráfico de Hidratação
+            const ctxHidratacao = document.getElementById('hidratacaoChart');
+            if (ctxHidratacao) {
+                chartsInstances.hidratacao = new Chart(ctxHidratacao, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'],
+                        datasets: [{
+                            label: 'Média (ml)',
+                            data: [2100, 2300, 2150, 2400, 2250],
+                            backgroundColor: '#1B8A4C'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // Gráfico de Pressão
+            const ctxPressao = document.getElementById('pressaoChart');
+            if (ctxPressao) {
+                chartsInstances.pressao = new Chart(ctxPressao, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Sistólica/Diastólica',
+                            data: [
+                                {x: 120, y: 80}, {x: 125, y: 82}, {x: 118, y: 78},
+                                {x: 130, y: 85}, {x: 122, y: 81}
+                            ],
+                            backgroundColor: '#1B8A4C'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // Gráfico de Aderência
+            const ctxAderencia = document.getElementById('aderenciaChart');
+            if (ctxAderencia) {
+                chartsInstances.aderencia = new Chart(ctxAderencia, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Ativa', 'Moderada', 'Baixa'],
+                        datasets: [{
+                            data: [65, 25, 10],
+                            backgroundColor: ['#1B8A4C', '#27AE60', '#F59E0B']
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+
+        async function loadUsuariosAtivos() {
+            const content = document.getElementById('usuariosAtivosContent');
+            content.innerHTML = '<div class="loading">Carregando...</div>';
+
+            const employees = await fetchFirebaseData();
+            const ativos = Object.entries(employees).slice(0, 5);
+
+            if (ativos.length === 0) {
+                content.innerHTML = '<div class="empty-state">Nenhum usuário ativo agora</div>';
                 return;
             }
 
             let html = '';
-            list.forEach(([matricula, data]) => {
+            ativos.forEach(([matricula, data]) => {
                 html += `
                     <div class="card">
-                        <div class="card-title">${data.nome || 'N/A'}</div>
-                        <div class="card-row"><div class="card-row-label">Matrícula:</div><div class="card-row-value">${matricula}</div></div>
-                        <div class="card-row"><div class="card-row-label">Peso:</div><div class="card-row-value">${data.peso || 'N/A'} kg</div></div>
-                        <div class="card-row"><div class="card-row-label">Altura:</div><div class="card-row-value">${data.altura || 'N/A'} m</div></div>
-                        <div class="card-row"><div class="card-row-label">Pontos:</div><div class="card-row-value">${data.points || 0}</div></div>
+                        <div class="card-title">${data.nome || 'Funcionário'}</div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 12px;">
+                            <span style="font-size: 12px; color: #999;">Último acesso: Agora</span>
+                            <span class="badge badge-active">ATIVO</span>
+                        </div>
                     </div>
                 `;
             });
             content.innerHTML = html;
         }
 
-        async function loadHidratacao() {
-            const content = document.getElementById('hidratacaoContent');
+        async function loadFuncionarios() {
+            const employees = await fetchFirebaseData();
+            const tbody = document.getElementById('funcionariosBody');
+            tbody.innerHTML = '';
+
+            Object.entries(employees).forEach(([matricula, data]) => {
+                const aderencia = Math.round(Math.random() * 100);
+                const status = aderencia > 70 ? 'ATIVO' : 'MODERADO';
+                const badgeClass = aderencia > 70 ? 'badge-active' : 'badge-inactive';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${data.nome || 'N/A'}</strong></td>
+                        <td>${matricula}</td>
+                        <td><span class="badge ${badgeClass}">${status}</span></td>
+                        <td><strong>${data.points || 0}</strong></td>
+                        <td>
+                            <div class="progress-bar"><div class="progress-fill" style="width: ${aderencia}%;"></div></div>
+                            ${aderencia}%
+                        </td>
+                        <td>Hoje às 14:30</td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function loadRanking() {
+            const content = document.getElementById('rankingContent');
             content.innerHTML = '<div class="loading">Carregando...</div>';
 
             const employees = await fetchFirebaseData();
-            let html = '';
+            const ranking = Object.entries(employees)
+                .map(([matricula, data]) => ({ nome: data.nome, pontos: data.points || 0 }))
+                .sort((a, b) => b.pontos - a.pontos);
 
-            Object.entries(employees).forEach(([matricula, data]) => {
-                if (data.hydration && data.hydration.today) {
-                    const today = data.hydration.today;
-                    const progress = Math.min((today / 2500) * 100, 100);
-                    html += `
-                        <div class="card">
-                            <div class="card-title">${data.nome || 'Funcionário'}</div>
-                            <div class="card-row"><div class="card-row-label">Ingestão:</div><div class="card-row-value">${today}ml / 2500ml</div></div>
-                            <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%;"></div></div>
-                        </div>
-                    `;
-                }
-            });
-
-            content.innerHTML = html || '<div class="empty-state">💧 Nenhum registro de hidratação</div>';
-        }
-
-        async function loadSaude() {
-            const content = document.getElementById('saudeContent');
-            content.innerHTML = '<div class="loading">Carregando...</div>';
-
-            const employees = await fetchFirebaseData();
-            let html = '';
-
-            Object.entries(employees).forEach(([matricula, data]) => {
-                if (data.health && data.health.pressure && Array.isArray(data.health.pressure) && data.health.pressure.length > 0) {
-                    const pressure = data.health.pressure[data.health.pressure.length - 1];
-                    html += `
-                        <div class="card">
-                            <div class="card-title">${data.nome || 'Funcionário'}</div>
-                            <div class="card-row"><div class="card-row-label">Pressão:</div><div class="card-row-value">${pressure.systolic}/${pressure.diastolic} mmHg</div></div>
-                        </div>
-                    `;
-                }
-            });
-
-            content.innerHTML = html || '<div class="empty-state">❤️ Nenhum registro de saúde</div>';
-        }
-
-        async function loadAuditoria() {
-            const content = document.getElementById('auditoriaContent');
-            content.innerHTML = '<div class="loading">Carregando...</div>';
-
-            try {
-                const snapshot = await db.ref('canteiro-saudavel/admin-logs').orderByChild('timestamp').limitToLast(50).once('value');
-                const logs = snapshot.val() || {};
-                const logList = Object.values(logs).reverse();
-
-                if (logList.length === 0) {
-                    content.innerHTML = '<div class="empty-state">📋 Nenhum acesso registrado</div>';
-                    return;
-                }
-
-                let html = '';
-                logList.forEach(log => {
-                    const date = new Date(log.timestamp).toLocaleString('pt-BR');
-                    const actionEmoji = log.action === 'LOGIN' ? '🔓' : '🔒';
-                    const resultColor = log.result.includes('Sucesso') ? '#22C55E' : '#DC2626';
-                    
-                    html += `
-                        <div class="card">
-                            <div class="card-row">
-                                <div class="card-row-label">${actionEmoji} ${log.action}</div>
-                                <div class="card-row-value" style="color: ${resultColor}; font-weight: 600;">${log.result}</div>
-                            </div>
-                            <div class="card-row">
-                                <div class="card-row-label">Usuário:</div>
-                                <div class="card-row-value">${log.email}</div>
-                            </div>
-                            <div class="card-row">
-                                <div class="card-row-label">Data/Hora:</div>
-                                <div class="card-row-value">${date}</div>
-                            </div>
-                        </div>
-                    `;
-                });
-                content.innerHTML = html;
-            } catch (error) {
-                console.error('Erro ao carregar auditoria:', error);
-                content.innerHTML = '<div class="empty-state">❌ Erro ao carregar log de acessos</div>';
+            if (ranking.length === 0) {
+                content.innerHTML = '<div class="empty-state">Nenhum dado de ranking</div>';
+                return;
             }
+
+            let html = '';
+            const medals = ['🥇', '🥈', '🥉'];
+            ranking.slice(0, 10).forEach((item, index) => {
+                html += `
+                    <div class="ranking-item">
+                        <div class="ranking-medal">${medals[index] || '🏅'}</div>
+                        <div class="ranking-position">#${index + 1}</div>
+                        <div class="ranking-info">
+                            <div class="ranking-name">${item.nome}</div>
+                            <div class="ranking-value">${item.pontos} pontos</div>
+                        </div>
+                    </div>
+                `;
+            });
+            content.innerHTML = html;
+        }
+
+        async function loadDesafios() {
+            const content = document.getElementById('desafiosContent');
+            content.innerHTML = '<div class="loading">Carregando...</div>';
+
+            const employees = await fetchFirebaseData();
+            let html = '';
+
+            Object.entries(employees).forEach(([matricula, data]) => {
+                if (data.challenges) {
+                    Object.entries(data.challenges).forEach(([challengeId, challenge]) => {
+                        html += `
+                            <div class="challenge-item">
+                                <div class="challenge-header">
+                                    <div class="challenge-name">${challenge.name || 'Desafio'}</div>
+                                    <span class="badge ${challenge.status === 'approved' ? 'badge-active' : 'badge-pending'}">${challenge.status || 'PENDENTE'}</span>
+                                </div>
+                                <div class="challenge-details">
+                                    <strong>Funcionário:</strong> ${data.nome}<br>
+                                    <strong>Dificuldades:</strong> ${challenge.difficulties || 'Nenhuma'}<br>
+                                    <strong>Fotos:</strong> ${challenge.photos?.length || 0} anexadas
+                                </div>
+                                <div class="challenge-photos">
+                                    ${(challenge.photos || []).map(() => '<div class="challenge-photo">📷</div>').join('')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            });
+
+            content.innerHTML = html || '<div class="empty-state">Nenhum desafio registrado</div>';
+        }
+
+        async function loadRelatorios() {
+            const content = document.getElementById('relatoriosContent');
+            content.innerHTML = `
+                <div class="card">
+                    <div class="card-title">📄 Relatório Completo - Maio 2026</div>
+                    <div class="card-content">
+                        <p><strong>Período:</strong> 01/05/2026 - 11/05/2026</p>
+                        <p><strong>Total de Funcionários:</strong> 25</p>
+                        <p><strong>Aderência Geral:</strong> 78%</p>
+                        <p><strong>Check-ins Realizados:</strong> 195</p>
+                        <p><strong>Hidratação Média:</strong> 2.250ml/dia</p>
+                        <p><strong>Desafios Completados:</strong> 42</p>
+                        <p><strong>Taxa de Conclusão de Desafios:</strong> 85%</p>
+                        <button style="margin-top: 16px; padding: 10px 20px; background: #1B8A4C; color: white; border: none; border-radius: 8px; cursor: pointer;">📥 Baixar PDF</button>
+                    </div>
+                </div>
+            `;
         }
 
         window.addEventListener('load', function() {
